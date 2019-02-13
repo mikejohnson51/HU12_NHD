@@ -76,5 +76,4 @@ fix <- bind_rows(fix, list(HUC12 = "101701030209",
                            TOHUC = "101701030210", 
                            comment = "Shouldn't be CLOSED BASIN"))
 
-saveRDS(fix, "hu_fixes.rds")
-
+readr::write_csv(fix, "hu_fixes.csv")

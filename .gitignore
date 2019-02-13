@@ -1,0 +1,9 @@
+*.DS_Store
+*.rds
+*.RData
+*.Rhistory
+.Rproj.user
+data
+*.gpkg
+*.gdb
+*.gif
