@@ -5,25 +5,25 @@
   <evaluateDefaultValues active="0"/>
   <layer-tree-group expanded="1" checked="Qt::PartiallyChecked" name="">
     <customproperties/>
+    <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="wbd_grouped20190223143016924" name="wbd_grouped">
+      <customproperties/>
+    </layer-tree-layer>
+    <layer-tree-layer expanded="0" checked="Qt::Unchecked" id="net20190212135939100" name="net">
+      <customproperties/>
+    </layer-tree-layer>
     <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="wbdhu1220190212141904504" name="wbdhu12">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="net20190212135939100" name="net">
-      <customproperties/>
-    </layer-tree-layer>
-    <layer-tree-layer expanded="0" checked="Qt::Checked" id="wbd_matched20190212135052151" name="wbd_matched">
+    <layer-tree-layer expanded="1" checked="Qt::Checked" id="wbd_matched20190212135052151" name="wbd_matched">
       <customproperties/>
     </layer-tree-layer>
     <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="net_grouped20190212133328917" name="net_grouped">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="wbd_grouped20190212134411180" name="wbd_grouped">
-      <customproperties/>
-    </layer-tree-layer>
     <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="wbd_matched20190212141322962" name="wbd_matched">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="OSM_Standard20190213082909150" name="OSM Standard">
+    <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="OSM_Standard20190213082909150" name="OSM Standard">
       <customproperties/>
     </layer-tree-layer>
   </layer-tree-group>
@@ -31,10 +31,10 @@
   <mapcanvas>
     <units>meters</units>
     <extent>
-      <xmin>431898.51038772787433118</xmin>
-      <ymin>695453.14300508110318333</ymin>
-      <xmax>540697.3937087730737403</xmax>
-      <ymax>807073.39120965416077524</ymax>
+      <xmin>-2503584.25625000009313226</xmin>
+      <ymin>167470.5234375</ymin>
+      <xmax>2446032.00625000009313226</xmax>
+      <ymax>3374744.4140625</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
@@ -56,6 +56,7 @@
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="net20190212135939100"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="wbd_matched20190212141322962"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="wbd_matched20190212135052151"/>
+      <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="wbd_grouped20190223143016924"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:3857" srcDatumTransform="-1" destDatumTransform="-1" layerid="OSM_Standard20190213082909150"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="wbdhu1220190212141904504"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="net_grouped20190212133328917"/>
@@ -64,27 +65,32 @@
   <layer-tree-canvas>
     <custom-order enabled="0">
       <item>net_grouped20190212133328917</item>
-      <item>wbd_grouped20190212134411180</item>
       <item>wbd_matched20190212135052151</item>
       <item>net20190212135939100</item>
       <item>wbd_matched20190212141322962</item>
       <item>wbdhu1220190212141904504</item>
       <item>OSM_Standard20190213082909150</item>
+      <item>wbd_grouped20190223143016924</item>
     </custom-order>
   </layer-tree-canvas>
   <legend updateDrawingOrder="true">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="wbd_grouped" showFeatureCount="0">
+      <filegroup open="true" hidden="false">
+        <legendlayerfile isInOverview="0" layerid="wbd_grouped20190223143016924" visible="0"/>
+      </filegroup>
+    </legendlayer>
+    <legendlayer drawingOrder="-1" open="false" checked="Qt::Unchecked" name="net" showFeatureCount="0">
+      <filegroup open="false" hidden="false">
+        <legendlayerfile isInOverview="0" layerid="net20190212135939100" visible="0"/>
+      </filegroup>
+    </legendlayer>
     <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="wbdhu12" showFeatureCount="0">
       <filegroup open="true" hidden="false">
         <legendlayerfile isInOverview="0" layerid="wbdhu1220190212141904504" visible="0"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="net" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="wbd_matched" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="net20190212135939100" visible="1"/>
-      </filegroup>
-    </legendlayer>
-    <legendlayer drawingOrder="-1" open="false" checked="Qt::Checked" name="wbd_matched" showFeatureCount="0">
-      <filegroup open="false" hidden="false">
         <legendlayerfile isInOverview="0" layerid="wbd_matched20190212135052151" visible="1"/>
       </filegroup>
     </legendlayer>
@@ -93,19 +99,14 @@
         <legendlayerfile isInOverview="0" layerid="net_grouped20190212133328917" visible="0"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="wbd_grouped" showFeatureCount="0">
-      <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="wbd_grouped20190212134411180" visible="1"/>
-      </filegroup>
-    </legendlayer>
     <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="wbd_matched" showFeatureCount="0">
       <filegroup open="true" hidden="false">
         <legendlayerfile isInOverview="0" layerid="wbd_matched20190212141322962" visible="0"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="OSM Standard" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="OSM Standard" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="OSM_Standard20190213082909150" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="OSM_Standard20190213082909150" visible="0"/>
       </filegroup>
     </legendlayer>
   </legend>
@@ -118,7 +119,7 @@
         <ymax>20037508.34278924390673637</ymax>
       </extent>
       <id>OSM_Standard20190213082909150</id>
-      <datasource></datasource>
+      <datasource>.</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -153,6 +154,12 @@
       </customproperties>
     </maplayer>
     <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Line" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
+      <extent>
+        <xmin>-2374070</xmin>
+        <ymin>311299.125</ymin>
+        <xmax>2279344.75</xmax>
+        <ymax>3164137.5</ymax>
+      </extent>
       <id>net20190212135939100</id>
       <datasource>dbname='nhd' host=localhost port=5432 user='dblodgett' sslmode=disable key='fid' srid=5070 type=MultiLineString table="public"."net" (the_geom) sql=</datasource>
       <keywordList>
@@ -1534,13 +1541,7 @@ def my_form_open(dialog, layer, feature):
       </conditionalstyles>
     </maplayer>
     <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Polygon" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
-      <extent>
-        <xmin>-2387121.75</xmin>
-        <ymin>279613.125</ymin>
-        <xmax>2286925.25</xmax>
-        <ymax>3204168.25</ymax>
-      </extent>
-      <id>wbd_grouped20190212134411180</id>
+      <id>wbd_grouped20190223143016924</id>
       <datasource>dbname='nhd' host=localhost port=5432 user='dblodgett' sslmode=disable key='fid' srid=5070 type=MultiPolygon table="public"."wbd_grouped" (the_geom) sql=</datasource>
       <keywordList>
         <value></value>
@@ -1565,7 +1566,7 @@ def my_form_open(dialog, layer, feature):
       <expressionfields/>
       <defaults>
         <default field="fid" expression=""/>
-        <default field="levelpathi" expression=""/>
+        <default field="corrected_levelpathi" expression=""/>
       </defaults>
       <map-layer-style-manager current="">
         <map-layer-style name=""/>
@@ -1574,7 +1575,7 @@ def my_form_open(dialog, layer, feature):
         <edittype widgetv2type="TextEdit" name="fid">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
-        <edittype widgetv2type="TextEdit" name="levelpathi">
+        <edittype widgetv2type="TextEdit" name="corrected_levelpathi">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
       </edittypes>
@@ -1583,16 +1584,16 @@ def my_form_open(dialog, layer, feature):
           <symbol alpha="1" clip_to_extent="1" type="fill" name="0">
             <layer pass="0" class="SimpleFill" locked="0">
               <prop k="border_width_map_unit_scale" v="0,0,0,0,0,0"/>
-              <prop k="color" v="83,212,141,255"/>
+              <prop k="color" v="113,224,132,255"/>
               <prop k="joinstyle" v="bevel"/>
               <prop k="offset" v="0,0"/>
               <prop k="offset_map_unit_scale" v="0,0,0,0,0,0"/>
               <prop k="offset_unit" v="MM"/>
               <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="no"/>
+              <prop k="outline_style" v="solid"/>
               <prop k="outline_width" v="0.26"/>
               <prop k="outline_width_unit" v="MM"/>
-              <prop k="style" v="solid"/>
+              <prop k="style" v="no"/>
             </layer>
           </symbol>
         </symbols>
@@ -1800,15 +1801,15 @@ def my_form_open(dialog, layer, feature):
       <annotationform>.</annotationform>
       <aliases>
         <alias field="fid" index="0" name=""/>
-        <alias field="levelpathi" index="1" name=""/>
+        <alias field="corrected_levelpathi" index="1" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <attributeactions default="-1"/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="-1908317773">
         <columns>
           <column width="-1" hidden="0" type="field" name="fid"/>
-          <column width="-1" hidden="0" type="field" name="levelpathi"/>
+          <column width="-1" hidden="0" type="field" name="corrected_levelpathi"/>
           <column width="-1" hidden="1" type="actions"/>
         </columns>
       </attributetableconfig>
@@ -1842,6 +1843,12 @@ def my_form_open(dialog, layer, feature):
       </conditionalstyles>
     </maplayer>
     <maplayer simplifyAlgorithm="0" minimumScale="0" maximumScale="1e+08" simplifyDrawingHints="1" readOnly="0" minLabelScale="0" maxLabelScale="1e+08" simplifyDrawingTol="1" geometry="Polygon" simplifyMaxScale="1" type="vector" hasScaleBasedVisibilityFlag="0" simplifyLocal="1" scaleBasedLabelVisibilityFlag="0">
+      <extent>
+        <xmin>-2385736.25</xmin>
+        <ymin>243834.1875</ymin>
+        <xmax>2328184</xmax>
+        <ymax>3298380.75</ymax>
+      </extent>
       <id>wbd_matched20190212135052151</id>
       <datasource>dbname='nhd' host=localhost port=5432 user='dblodgett' sslmode=disable key='fid' srid=5070 type=MultiPolygon table="public"."wbd_matched" (the_geom) sql=</datasource>
       <keywordList>
@@ -1867,68 +1874,25 @@ def my_form_open(dialog, layer, feature):
       <expressionfields/>
       <defaults>
         <default field="fid" expression=""/>
-        <default field="tnmid" expression=""/>
-        <default field="metasourceid" expression=""/>
-        <default field="sourcedatadesc" expression=""/>
-        <default field="sourceoriginator" expression=""/>
-        <default field="sourcefeatureid" expression=""/>
-        <default field="loaddate" expression=""/>
-        <default field="gnis_id" expression=""/>
-        <default field="areaacres" expression=""/>
-        <default field="areasqkm" expression=""/>
-        <default field="states" expression=""/>
         <default field="huc12" expression=""/>
         <default field="name" expression=""/>
         <default field="hutype" expression=""/>
         <default field="humod" expression=""/>
         <default field="tohuc" expression=""/>
-        <default field="noncontributingareaacres" expression=""/>
-        <default field="noncontributingareasqkm" expression=""/>
-        <default field="globalid" expression=""/>
-        <default field="shape_length" expression=""/>
         <default field="shape_area" expression=""/>
-        <default field="levelpathi" expression=""/>
+        <default field="intersected_levelpathi" expression=""/>
+        <default field="corrected_levelpathi" expression=""/>
         <default field="head_huc12" expression=""/>
+        <default field="outlet_huc12" expression=""/>
         <default field="trib_intersect" expression=""/>
         <default field="trib_no_intersect" expression=""/>
         <default field="headwater_error" expression=""/>
-        <default field="broken_path" expression=""/>
       </defaults>
       <map-layer-style-manager current="">
         <map-layer-style name=""/>
       </map-layer-style-manager>
       <edittypes>
         <edittype widgetv2type="TextEdit" name="fid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="tnmid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="metasourceid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="sourcedatadesc">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="sourceoriginator">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="sourcefeatureid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="loaddate">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="gnis_id">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="areaacres">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="areasqkm">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="states">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
         <edittype widgetv2type="TextEdit" name="huc12">
@@ -1946,25 +1910,19 @@ def my_form_open(dialog, layer, feature):
         <edittype widgetv2type="TextEdit" name="tohuc">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
-        <edittype widgetv2type="TextEdit" name="noncontributingareaacres">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="noncontributingareasqkm">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="globalid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="shape_length">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
         <edittype widgetv2type="TextEdit" name="shape_area">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
-        <edittype widgetv2type="TextEdit" name="levelpathi">
+        <edittype widgetv2type="TextEdit" name="intersected_levelpathi">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="corrected_levelpathi">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
         <edittype widgetv2type="TextEdit" name="head_huc12">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="outlet_huc12">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
         <edittype widgetv2type="TextEdit" name="trib_intersect">
@@ -1976,13 +1934,10 @@ def my_form_open(dialog, layer, feature):
         <edittype widgetv2type="TextEdit" name="headwater_error">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
-        <edittype widgetv2type="TextEdit" name="broken_path">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
       </edittypes>
       <renderer-v2 forceraster="0" symbollevels="0" type="RuleRenderer" enableorderby="0">
         <rules key="{b81e7ea0-c71e-43c8-a119-33e1ef9eaf38}">
-          <rule checkstate="0" filter=" &quot;trib_intersect&quot; = 't'" key="{581671f0-8bcc-4a51-ada4-e9a45d07d5c6}" symbol="0" label="Trib Confluence Intersection"/>
+          <rule filter=" &quot;trib_intersect&quot; = 't'" key="{581671f0-8bcc-4a51-ada4-e9a45d07d5c6}" symbol="0" label="Trib Confluence Intersection"/>
           <rule filter=" &quot;trib_no_intersect&quot; = 't'" key="{e155a0a4-6752-44a6-8954-365e56affdfe}" symbol="1" label="Path No Intersection"/>
           <rule checkstate="0" filter=" &quot;headwater_error&quot; = 't'" key="{f62f1613-2aa5-4616-a7ec-2b735d6d9a63}" symbol="2" label="Headwater Overlap"/>
         </rules>
@@ -2235,32 +2190,19 @@ def my_form_open(dialog, layer, feature):
       <annotationform>.</annotationform>
       <aliases>
         <alias field="fid" index="0" name=""/>
-        <alias field="tnmid" index="1" name=""/>
-        <alias field="metasourceid" index="2" name=""/>
-        <alias field="sourcedatadesc" index="3" name=""/>
-        <alias field="sourceoriginator" index="4" name=""/>
-        <alias field="sourcefeatureid" index="5" name=""/>
-        <alias field="loaddate" index="6" name=""/>
-        <alias field="gnis_id" index="7" name=""/>
-        <alias field="areaacres" index="8" name=""/>
-        <alias field="areasqkm" index="9" name=""/>
-        <alias field="states" index="10" name=""/>
-        <alias field="huc12" index="11" name=""/>
-        <alias field="name" index="12" name=""/>
-        <alias field="hutype" index="13" name=""/>
-        <alias field="humod" index="14" name=""/>
-        <alias field="tohuc" index="15" name=""/>
-        <alias field="noncontributingareaacres" index="16" name=""/>
-        <alias field="noncontributingareasqkm" index="17" name=""/>
-        <alias field="globalid" index="18" name=""/>
-        <alias field="shape_length" index="19" name=""/>
-        <alias field="shape_area" index="20" name=""/>
-        <alias field="levelpathi" index="21" name=""/>
-        <alias field="head_huc12" index="22" name=""/>
-        <alias field="trib_intersect" index="23" name=""/>
-        <alias field="trib_no_intersect" index="24" name=""/>
-        <alias field="headwater_error" index="25" name=""/>
-        <alias field="broken_path" index="26" name=""/>
+        <alias field="huc12" index="1" name=""/>
+        <alias field="name" index="2" name=""/>
+        <alias field="hutype" index="3" name=""/>
+        <alias field="humod" index="4" name=""/>
+        <alias field="tohuc" index="5" name=""/>
+        <alias field="shape_area" index="6" name=""/>
+        <alias field="intersected_levelpathi" index="7" name=""/>
+        <alias field="corrected_levelpathi" index="8" name=""/>
+        <alias field="head_huc12" index="9" name=""/>
+        <alias field="outlet_huc12" index="10" name=""/>
+        <alias field="trib_intersect" index="11" name=""/>
+        <alias field="trib_no_intersect" index="12" name=""/>
+        <alias field="headwater_error" index="13" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
@@ -2352,68 +2294,25 @@ def my_form_open(dialog, layer, feature):
       <expressionfields/>
       <defaults>
         <default field="fid" expression=""/>
-        <default field="tnmid" expression=""/>
-        <default field="metasourceid" expression=""/>
-        <default field="sourcedatadesc" expression=""/>
-        <default field="sourceoriginator" expression=""/>
-        <default field="sourcefeatureid" expression=""/>
-        <default field="loaddate" expression=""/>
-        <default field="gnis_id" expression=""/>
-        <default field="areaacres" expression=""/>
-        <default field="areasqkm" expression=""/>
-        <default field="states" expression=""/>
         <default field="huc12" expression=""/>
         <default field="name" expression=""/>
         <default field="hutype" expression=""/>
         <default field="humod" expression=""/>
         <default field="tohuc" expression=""/>
-        <default field="noncontributingareaacres" expression=""/>
-        <default field="noncontributingareasqkm" expression=""/>
-        <default field="globalid" expression=""/>
-        <default field="shape_length" expression=""/>
         <default field="shape_area" expression=""/>
-        <default field="levelpathi" expression=""/>
+        <default field="intersected_levelpathi" expression=""/>
+        <default field="corrected_levelpathi" expression=""/>
         <default field="head_huc12" expression=""/>
+        <default field="outlet_huc12" expression=""/>
         <default field="trib_intersect" expression=""/>
         <default field="trib_no_intersect" expression=""/>
         <default field="headwater_error" expression=""/>
-        <default field="broken_path" expression=""/>
       </defaults>
       <map-layer-style-manager current="">
         <map-layer-style name=""/>
       </map-layer-style-manager>
       <edittypes>
         <edittype widgetv2type="TextEdit" name="fid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="tnmid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="metasourceid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="sourcedatadesc">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="sourceoriginator">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="sourcefeatureid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="loaddate">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="gnis_id">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="areaacres">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="areasqkm">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="states">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
         <edittype widgetv2type="TextEdit" name="huc12">
@@ -2431,25 +2330,19 @@ def my_form_open(dialog, layer, feature):
         <edittype widgetv2type="TextEdit" name="tohuc">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
-        <edittype widgetv2type="TextEdit" name="noncontributingareaacres">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="noncontributingareasqkm">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="globalid">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="shape_length">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
         <edittype widgetv2type="TextEdit" name="shape_area">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
-        <edittype widgetv2type="TextEdit" name="levelpathi">
+        <edittype widgetv2type="TextEdit" name="intersected_levelpathi">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="corrected_levelpathi">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
         <edittype widgetv2type="TextEdit" name="head_huc12">
+          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
+        </edittype>
+        <edittype widgetv2type="TextEdit" name="outlet_huc12">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
         <edittype widgetv2type="TextEdit" name="trib_intersect">
@@ -2459,9 +2352,6 @@ def my_form_open(dialog, layer, feature):
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
         <edittype widgetv2type="TextEdit" name="headwater_error">
-          <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
-        </edittype>
-        <edittype widgetv2type="TextEdit" name="broken_path">
           <widgetv2config IsMultiline="0" fieldEditable="1" constraint="" UseHtml="0" labelOnTop="0" constraintDescription="" notNull="0"/>
         </edittype>
       </edittypes>
@@ -2516,32 +2406,19 @@ def my_form_open(dialog, layer, feature):
       <annotationform>.</annotationform>
       <aliases>
         <alias field="fid" index="0" name=""/>
-        <alias field="tnmid" index="1" name=""/>
-        <alias field="metasourceid" index="2" name=""/>
-        <alias field="sourcedatadesc" index="3" name=""/>
-        <alias field="sourceoriginator" index="4" name=""/>
-        <alias field="sourcefeatureid" index="5" name=""/>
-        <alias field="loaddate" index="6" name=""/>
-        <alias field="gnis_id" index="7" name=""/>
-        <alias field="areaacres" index="8" name=""/>
-        <alias field="areasqkm" index="9" name=""/>
-        <alias field="states" index="10" name=""/>
-        <alias field="huc12" index="11" name=""/>
-        <alias field="name" index="12" name=""/>
-        <alias field="hutype" index="13" name=""/>
-        <alias field="humod" index="14" name=""/>
-        <alias field="tohuc" index="15" name=""/>
-        <alias field="noncontributingareaacres" index="16" name=""/>
-        <alias field="noncontributingareasqkm" index="17" name=""/>
-        <alias field="globalid" index="18" name=""/>
-        <alias field="shape_length" index="19" name=""/>
-        <alias field="shape_area" index="20" name=""/>
-        <alias field="levelpathi" index="21" name=""/>
-        <alias field="head_huc12" index="22" name=""/>
-        <alias field="trib_intersect" index="23" name=""/>
-        <alias field="trib_no_intersect" index="24" name=""/>
-        <alias field="headwater_error" index="25" name=""/>
-        <alias field="broken_path" index="26" name=""/>
+        <alias field="huc12" index="1" name=""/>
+        <alias field="name" index="2" name=""/>
+        <alias field="hutype" index="3" name=""/>
+        <alias field="humod" index="4" name=""/>
+        <alias field="tohuc" index="5" name=""/>
+        <alias field="shape_area" index="6" name=""/>
+        <alias field="intersected_levelpathi" index="7" name=""/>
+        <alias field="corrected_levelpathi" index="8" name=""/>
+        <alias field="head_huc12" index="9" name=""/>
+        <alias field="outlet_huc12" index="10" name=""/>
+        <alias field="trib_intersect" index="11" name=""/>
+        <alias field="trib_no_intersect" index="12" name=""/>
+        <alias field="headwater_error" index="13" name=""/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>

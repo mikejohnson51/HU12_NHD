@@ -4,16 +4,6 @@ library(dplyr)
 
 load("nhd_wbd.RData")
 
-GNIS_outlets <- net_atts %>%
-  select(COMID, GNIS_ID, Hydroseq) %>%
-  group_by(GNIS_ID) %>%
-  filter(Hydroseq == min(Hydroseq) & GNIS_ID != " ") %>%
-  ungroup() %>%
-  select(-Hydroseq) %>%
-  left_join(net_prep, by = "COMID") %>%
-  select(-HUC12, -TOHUC) %>%
-  distinct()
-
 GNIS_terminals <- net_atts %>%
   select(GNIS_ID, TerminalPa) %>%
   filter(GNIS_ID != " ") %>%
@@ -52,7 +42,7 @@ par_fun <- function(start_comid, net_atts, net_prep, wbd_atts, log_file) {
                                          !HUC12 %in% sub_net$HUC12),
                                   HUC12, TOHUC))
       
-      out <- list(match_levelpaths(sub_net, start_comid, add_checks = TRUE))
+        out <- list(match_levelpaths(sub_net, start_comid, add_checks = TRUE))
     }
     
     saveRDS(out, out_file)
@@ -66,12 +56,18 @@ library(snow)
 
 cl <- parallel::makeCluster(rep("localhost", 4), type = "SOCK")
 
-# all_GNIS_outlets <- lapply(GNIS_terminals$COMID, par_fun,
+to_run <- GNIS_terminals$COMID
+already_run <- list.files("out/", pattern = "*.rds")
+already_run <- as.integer(gsub(".rds", "", already_run))
+
+to_run <- to_run[!to_run %in% already_run]
+
+# all_GNIS_outlets <- lapply(to_run, par_fun,
 #                            net_atts = net_atts,
 #                            net_prep = net_prep,
 #                            wbd_atts = wbd_atts)
 
-all_GNIS_outlets <- parLapply(cl, GNIS_terminals$COMID, par_fun,
+all_GNIS_outlets <- parLapply(cl, to_run, par_fun,
                               net_atts = net_atts,
                               net_prep = net_prep,
                               wbd_atts = wbd_atts,
@@ -89,6 +85,3 @@ names(all) <- gsub(".rds", "", names(all))
 all <- do.call(rbind, all)
 
 readr::write_csv(all, "map_joiner.csv")
-
-
-  
