@@ -9,9 +9,10 @@ no_intersect <- filter(all, trib_no_intersect) %>%
   select(corrected_LevelPathI, group_size) %>%
   distinct()
 
-wbd <- read_sf("WBD_National_GDB.gdb/", "WBDHU12")
+# wbd <- read_sf("WBD_National_GDB.gdb/", "WBDHU12")
+wbd <- read_sf("data/nhdplus/NHDPlusNationalData/NHDPlusV21_National_Seamless.gdb", "HUC12")
 
-fixes <- readr::read_csv("hu_fixes.csv")
+wbd <- select(wbd, HUC12 = HUC_12, TOHUC = HU_12_DS)
 
 for(fix in 1:nrow(fixes)) {
   wbd$TOHUC[wbd$HUC12 == fixes$HUC12[fix]] <- fixes$TOHUC[fix]
@@ -20,28 +21,20 @@ for(fix in 1:nrow(fixes)) {
 wbd <- filter(wbd, !grepl("^20.*|^19.*|^21.*|^22.*", wbd$HUC12))
 wbd <- st_transform(wbd, 5070)
 
-unlink("wbd_viz.gpkg")
-write_sf(wbd, "wbd_viz.gpkg")
+write_sf(wbd, "wbd_viz.gpkg", "wbd_viz")
+# unlink("wbd_viz.gpkg")
 
-net <- read_sf("data/nhdplus/NHDPlusNationalData/NHDPlusV21_National_Seamless.gdb/", "NHDFlowline_Network") %>%
-  st_zm()
-net <- st_transform(net, 5070) %>%
-  st_simplify(dTolerance = 30)
-  
-write_sf(net, "wbd_viz.gpkg", "net")
-
-wbd <- read_sf("wbd_viz.gpkg", "wbd_viz")
-
-fixes <- readr::read_csv("hu_fixes.csv")
-
-for(fix in 1:nrow(fixes)) {
-  wbd$TOHUC[wbd$HUC12 == fixes$HUC12[fix]] <- fixes$TOHUC[fix]
-}
+# net <- read_sf("data/nhdplus/NHDPlusNationalData/NHDPlusV21_National_Seamless.gdb/", "NHDFlowline_Network") %>%
+#   st_zm()
+# net <- st_transform(net, 5070) %>%
+#   st_simplify(dTolerance = 30)
+#
+# write_sf(net, "wbd_viz.gpkg", "net")
 
 wbd <- left_join(wbd, select(all, -TOHUC), by = "HUC12")
-wbd <- wbd[,11:ncol(wbd)]
-wbd <- select(wbd, -NONCONTRIBUTINGAREAACRES, -NONCONTRIBUTINGAREASQKM, 
-              -GLOBALID, -SHAPE_Length, -SHAPE_Length)
+# wbd <- wbd[,11:ncol(wbd)]
+# wbd <- select(wbd, -NONCONTRIBUTINGAREAACRES, -NONCONTRIBUTINGAREASQKM, 
+#               -GLOBALID, -SHAPE_Length, -SHAPE_Length)
 
 write_sf(wbd, "wbd_viz.gpkg", "wbd_matched")
 

@@ -9,7 +9,7 @@ bad_lps <- select(huc12, levelpath, trib_no_intersect, headwater_error) %>%
   filter(trib_no_intersect | headwater_error)
 
 huc12 <- select(huc12, -trib_intersect) %>%
-  filter(!levelpath %in% bad_lps$levelpath & !is.na(outlet_huc12)) %>%
+  filter(!is.na(outlet_huc12)) %>% # !levelpath %in% bad_lps$levelpath &
   distinct()
 
 doops <- filter(huc12, levelpath %in% huc12$levelpath[duplicated(huc12$levelpath)])
@@ -41,6 +41,12 @@ LP <- data.frame(levelpath = LPs) %>%
 
 readr::write_csv(LP, "main_stems.csv")
 
-  
+bad_lp_outlets <- net_prep %>%
+  select(LevelPathI, Hydroseq, denTotalAreaSqKM, COMID) %>%
+  filter(LevelPathI %in% bad_lps$levelpath) %>%
+  group_by(LevelPathI) %>%
+  filter(Hydroseq == min(Hydroseq)) %>%
+  ungroup() %>%
+  distinct()
 
 
