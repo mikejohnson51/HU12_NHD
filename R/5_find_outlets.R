@@ -48,7 +48,7 @@ if(file.exists(points_cache)) {
 }
 
 if(file.exists(lp_hu_points)) {
-  message(lp_hu_points, " exists, skipping creation.")
+  message(lp_hu_points, " exists. Skipping creation.")
 } else {
   
   lp_points <- lapply(names(points), 
@@ -66,103 +66,97 @@ if(file.exists(lp_hu_points)) {
   write_sf(lp_points, lp_hu_points)
 }
 
-# if(file.exists(linked_points_gpkg)) {
-#   message(linked_points_gpkg, " exists, nothing to do.")
-# } else {
-#   
-#   
-#   if(!exists("exclude")) {
-#     exclude <- readRDS("cache/exclude.rds")
-#   }
-#   
-#   lp_points <- read_sf(lp_hu_points)
-#   
-#   lp_points <- lp_points %>%
-#     filter(!hu12 %in% exclude) %>%
-#     mutate(lp = as.numeric(lp)) %>%
-#     group_by(hu12) %>%
-#     filter(lp == min(lp)) %>%
-#     ungroup()
-#   
-#   filter_na <- is.na(unname(st_coordinates(lp_points)[, 1]))
-#   na_points <- filter(lp_points, filter_na)
-#   lp_points <- filter(lp_points, !filter_na)
-#   
-#   na_points <- st_set_geometry(na_points, NULL)
-#   
-#   na_points <- distinct(na_points)
-#   
-#   both <- filter(na_points, na_points$hu12 %in% lp_points$hu12) # Only broken border HUs included.
-#   
-#   na_points <- filter(na_points, !hu12 %in% both)
-#   lp_points <- filter(lp_points, !hu12 %in% both)
-#   
-#   na_outlets <- net %>%
-#     filter(LevelPathI %in% na_points$lp) %>%
-#     group_by(LevelPathI) %>%
-#     filter(Hydroseq == min(Hydroseq))
-#   
-#   problem_na <- filter(na_outlets, FromMeas != 0)
-#   
-#   na_outlets <- filter(na_outlets, FromMeas == 0)
-#   
-#   na_outlet_coords <- st_coordinates(na_outlets) %>%
-#     as.data.frame() %>%
-#     group_by(L2) %>%
-#     filter(row_number() == n()) %>%
-#     ungroup() %>%
-#     select(-L1, -L2) %>%
-#     bind_cols(st_set_geometry(na_outlets, NULL)) %>%
-#     st_as_sf(coords = c("X", "Y"), crs = st_crs(na_outlets))
-#   
-#   na_outlet_coords$REACH_meas <- 0
-#   na_outlet_coords$offset <- 0
-#   
-#   na_outlet_coords <- rename(na_outlet_coords, 
-#                              lp = LevelPathI, 
-#                              geom = geometry) %>%
-#     select(-ToMeas, -FromMeas)
-#   
-#   na_outlet_coords <- select(COMID, REACHCODE, REACH_meas, offset, hu12)
-#   
-#   # lp_points <- left_join(lp_points, hu_lp, by = c("hu12" = "HUC12"))
-#   if(!exists("net")) {
-#     if(file.exists(net_cache)) {
-#       net <- readRDS(net_cache)
-#     } else {
-#       net <- read_sf(natdb, "NHDFlowline_Network") %>%
-#         st_zm()
-#       saveRDS(net, net_cache)
-#     }
-#   }
-#   
-#   lp_list <- unique(lp_points$lp)
-#   
-#   net <- select(net, COMID, LevelPathI, REACHCODE, ToMeas, FromMeas, Hydroseq) %>%
-#     filter(LevelPathI %in% lp_list)
-#   
-#   in_list_fun <- function(lp_search, net, lp_points) {
-#     list(lp_search = lp_search, 
-#          lp_geom = filter(net, LevelPathI == lp_search),
-#          hu_points = filter(lp_points, lp == lp_search))
-#   }
-#   
-#   in_list <- lapply(lp_list, in_list_fun, net = net, lp_points = lp_points)
-#   
-#   library(snow)
-#   cl <- parallel::makeCluster(rep("localhost", cores), type = "SOCK", outfile = "logs/par.log")
-#   
-#   linked <- parLapply(cl, in_list, par_linker)
-#   
-#   parallel::stopCluster(cl)
-#   
-#   linked <- st_sf(bind_rows(linked))
-#   
-#   st_crs(linked) <- st_crs(na_outlet_coords)
-#   
-#   linked2 <- rbind(linked, na_outlet_coords)
-#   
-#   write_sf(linked, linked_points_gpkg)
-# }
-# 
+if(file.exists(linked_points_gpkg)) {
+  message(linked_points_gpkg, " exists, nothing to do.")
+} else {
+
+
+  if(!exists("exclude")) {
+    exclude <- readRDS("cache/exclude.rds")
+  }
+
+  lp_points <- read_sf(lp_hu_points)
+
+  lp_points <- lp_points %>%
+    filter(!hu12 %in% exclude) %>%
+    mutate(lp = as.numeric(lp)) %>%
+    group_by(hu12) %>%
+    filter(lp == min(lp)) %>%
+    ungroup()
+
+  filter_na <- is.na(unname(st_coordinates(lp_points)[, 1]))
+  na_points <- filter(lp_points, filter_na)
+  lp_points <- filter(lp_points, !filter_na)
+
+  na_points <- st_set_geometry(na_points, NULL)
+
+  na_points <- distinct(na_points)
+
+  both <- filter(na_points, na_points$hu12 %in% lp_points$hu12) # Only broken border HUs included.
+
+  na_points <- filter(na_points, !hu12 %in% both)
+  lp_points <- filter(lp_points, !hu12 %in% both)
+
+  if(!exists("net")) {
+    net <- load_nhd(natdb, net_cache)
+  }
+  
+  na_outlets <- net %>%
+    filter(LevelPathI %in% na_points$lp) %>%
+    group_by(LevelPathI) %>%
+    filter(Hydroseq == min(Hydroseq)) %>%
+    ungroup() %>%
+    left_join(na_points, by = c("LevelPathI" = "lp"))
+
+  problem_na <- filter(na_outlets, FromMeas != 0)
+
+  na_outlets <- filter(na_outlets, FromMeas == 0)
+
+  na_outlet_coords <- st_coordinates(na_outlets) %>%
+    as.data.frame() %>%
+    group_by(L2) %>%
+    filter(row_number() == n()) %>%
+    ungroup() %>%
+    select(-L1, -L2) %>%
+    bind_cols(st_set_geometry(na_outlets, NULL)) %>%
+    st_as_sf(coords = c("X", "Y"), crs = st_crs(na_outlets)) %>%
+    rename(geom = geometry)
+
+  na_outlet_coords$REACH_meas <- 0
+  na_outlet_coords$offset <- 0
+
+  na_outlet_coords <- select(na_outlet_coords, 
+                             COMID, REACHCODE, REACH_meas, offset, HUC12 = hu12, LevelPathI)
+
+  lp_list <- unique(lp_points$lp)
+
+  net <- select(net, COMID, LevelPathI, REACHCODE, ToMeas, FromMeas, Hydroseq) %>%
+    filter(LevelPathI %in% lp_list)
+
+  in_list_fun <- function(lp_search, net, lp_points) {
+    list(lp_search = lp_search,
+         lp_geom = filter(net, LevelPathI == lp_search),
+         hu_points = filter(lp_points, lp == lp_search))
+  }
+
+  in_list <- lapply(lp_list, in_list_fun, net = net, lp_points = lp_points)
+
+  gc()
+  
+  library(snow)
+  cl <- parallel::makeCluster(rep("localhost", cores), type = "SOCK", outfile = "logs/par.log")
+
+  linked <- parLapply(cl, in_list, par_linker)
+
+  parallel::stopCluster(cl)
+
+  linked <- st_sf(do.call(rbind, linked), crs = st_crs(na_outlet_coords)) %>%
+    select(COMID, REACHCODE, REACH_meas, offset, HUC12 = hu12, LevelPathI = lp)
+  
+  linked <- rbind(linked, na_outlet_coords) %>%
+    st_sf()
+
+  write_sf(linked, linked_points_gpkg)
+}
+
 

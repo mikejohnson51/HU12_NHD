@@ -42,7 +42,7 @@ if(file.exists(hu_joiner)) {
   names(all) <- gsub("cache/temp/", "", names(all))
   names(all) <- gsub(".rds", "", names(all))
   
-  all <- brind_rows(all)
+  all <- bind_rows(all)
   
   readr::write_csv(all, hu_joiner)
   

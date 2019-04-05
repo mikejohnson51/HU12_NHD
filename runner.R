@@ -7,7 +7,7 @@ source("R/0_functions.R")
 cores <- 3
 
 # If new run delete temp files created in 4.
-unlink("cache/temp/*")
+# unlink("cache/temp/*")
 
 nhd_dir <- "data/nhdplus"
 nhd_file <- "NHDPlusNationalData/NHDPlusV21_National_Seamless.gdb"
@@ -17,6 +17,7 @@ source("R/2_fixes.R")
 
 process_cache <- "cache/nhd_wbd.RData"
 net_cache <- "cache/net.rds"
+natdb <- file.path(nhd_dir, nhd_file)
 
 source("R/3_setup.R")
 source("R/4_find_match.R")

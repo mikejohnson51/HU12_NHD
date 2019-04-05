@@ -32,10 +32,6 @@ if(file.exists(wbd_viz)) {
   
   wbd <- left_join(wbd, select(all, -TOHUC), by = "HUC12")
   
-  wbd <- wbd[,11:ncol(wbd)]
-  wbd <- select(wbd, -NONCONTRIBUTINGAREAACRES, -NONCONTRIBUTINGAREASQKM,
-                -GLOBALID, -SHAPE_Length, -SHAPE_Length)
-  
   write_sf(wbd, wbd_viz, "wbd_matched")
   
   wbd_grouped <- group_by(wbd, corrected_LevelPathI) %>%
@@ -44,27 +40,27 @@ if(file.exists(wbd_viz)) {
   
   write_sf(wbd_grouped, wbd_viz, "wbd_grouped")
   
-  net_grouped <- select(net, LevelPathI)
-  
-  # Could do with other methods, but this uses more cores and speeds things up a bit.
-  par_union <-  function(id, geom) {
-    sf::st_union(sf::st_geometry(geom)[which(geom$LevelPathI == id)])
-  }
-  
-  cl <- parallel::makeCluster(rep("localhost", 4), type = "SOCK")
-  
-  level_paths <- unique(net_grouped$LevelPathI)
-  
-  # Could use group_by and summarize(do_union = TRUE) but this scales better.
-  net_grouped <- snow::parSapply(cl, level_paths, 
-                                 par_union, geom = net_grouped)
-  
-  parallel::stopCluster(cl)
-  
-  net_grouped <- st_sf(LevelPathID = level_paths, geometry = st_sfc(net_grouped), 
-                       crs = st_crs(net_grouped))
-  
-  write_sf(net_grouped, wbd_viz, "net_grouped")
+  # net_grouped <- select(net, LevelPathI)
+  # 
+  # # Could do with other methods, but this uses more cores and speeds things up a bit.
+  # par_union <-  function(id, geom) {
+  #   sf::st_union(sf::st_geometry(geom)[which(geom$LevelPathI == id)])
+  # }
+  # 
+  # cl <- parallel::makeCluster(rep("localhost", 4), type = "SOCK")
+  # 
+  # level_paths <- unique(net_grouped$LevelPathI)
+  # 
+  # # Could use group_by and summarize(do_union = TRUE) but this scales better.
+  # net_grouped <- snow::parSapply(cl, level_paths, 
+  #                                par_union, geom = net_grouped)
+  # 
+  # parallel::stopCluster(cl)
+  # 
+  # net_grouped <- st_sf(LevelPathID = level_paths, geometry = st_sfc(net_grouped), 
+  #                      crs = st_crs(net_grouped))
+  # 
+  # write_sf(net_grouped, wbd_viz, "net_grouped")
   
   system("bash bin/pg_setup.sh")
 }

@@ -56,7 +56,6 @@ if(file.exists(process_cache)) {
   rm(wbd)
   rm(fix)
   rm(fixes)
-  rm(natdb)
   
   save(net_atts, net_prep, wbd_atts, file = process_cache)
   
