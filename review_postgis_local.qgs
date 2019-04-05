@@ -5,10 +5,10 @@
   <evaluateDefaultValues active="0"/>
   <layer-tree-group expanded="1" checked="Qt::PartiallyChecked" name="">
     <customproperties/>
-    <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="wbd_grouped20190223143016924" name="wbd_grouped">
+    <layer-tree-layer expanded="1" checked="Qt::Checked" id="wbd_grouped20190223143016924" name="wbd_grouped">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="1" checked="Qt::Checked" id="net20190212135939100" name="net">
+    <layer-tree-layer expanded="0" checked="Qt::Checked" id="net20190212135939100" name="net">
       <customproperties/>
     </layer-tree-layer>
     <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="wbd_viz20190320092430335" name="wbd_viz">
@@ -17,7 +17,7 @@
     <layer-tree-layer expanded="1" checked="Qt::Checked" id="nhdplus_hu1220190315080123556" name="nhdplus_hu12">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer expanded="0" checked="Qt::Unchecked" id="wbd_matched20190212135052151" name="wbd_matched">
+    <layer-tree-layer expanded="0" checked="Qt::Checked" id="wbd_matched20190212135052151" name="wbd_matched">
       <customproperties/>
     </layer-tree-layer>
     <layer-tree-layer expanded="1" checked="Qt::Unchecked" id="net_grouped20190212133328917" name="net_grouped">
@@ -34,10 +34,10 @@
   <mapcanvas>
     <units>meters</units>
     <extent>
-      <xmin>61046.95443870741291903</xmin>
-      <ymin>2697815.89854690991342068</ymin>
-      <xmax>61923.08459495274291839</xmax>
-      <ymax>2698667.8039062088355422</ymax>
+      <xmin>-1957902.72939091548323631</xmin>
+      <ymin>1790610.17600224888883531</ymin>
+      <xmax>-1927528.56269326712936163</xmax>
+      <ymax>1805392.39870369550772011</ymax>
     </extent>
     <rotation>0</rotation>
     <projections>1</projections>
@@ -64,9 +64,11 @@
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="wbd_matched20190212135052151"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="wbd_grouped20190223143016924"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:3857" srcDatumTransform="-1" destDatumTransform="-1" layerid="OSM_Standard20190213082909150"/>
+      <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:4140" srcDatumTransform="-1" destDatumTransform="-1" layerid="lp_hu_points20190402095953254"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="wbdhu1220190212141904504"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="net_grouped20190212133328917"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="nhdplus_hu1220190315080123556"/>
+      <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:4140" srcDatumTransform="-1" destDatumTransform="-1" layerid="linked_points20190404120206501"/>
       <layer_coordinate_transform destAuthId="EPSG:5070" srcAuthId="EPSG:5070" srcDatumTransform="-1" destDatumTransform="-1" layerid="nhdplus_hu12_copy20190318095623976"/>
     </layer_coordinate_transform_info>
   </mapcanvas>
@@ -83,13 +85,13 @@
     </custom-order>
   </layer-tree-canvas>
   <legend updateDrawingOrder="true">
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="wbd_grouped" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="wbd_grouped" showFeatureCount="0">
       <filegroup open="true" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="wbd_grouped20190223143016924" visible="0"/>
+        <legendlayerfile isInOverview="0" layerid="wbd_grouped20190223143016924" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="true" checked="Qt::Checked" name="net" showFeatureCount="0">
-      <filegroup open="true" hidden="false">
+    <legendlayer drawingOrder="-1" open="false" checked="Qt::Checked" name="net" showFeatureCount="0">
+      <filegroup open="false" hidden="false">
         <legendlayerfile isInOverview="0" layerid="net20190212135939100" visible="1"/>
       </filegroup>
     </legendlayer>
@@ -103,9 +105,9 @@
         <legendlayerfile isInOverview="0" layerid="nhdplus_hu1220190315080123556" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer drawingOrder="-1" open="false" checked="Qt::Unchecked" name="wbd_matched" showFeatureCount="0">
+    <legendlayer drawingOrder="-1" open="false" checked="Qt::Checked" name="wbd_matched" showFeatureCount="0">
       <filegroup open="false" hidden="false">
-        <legendlayerfile isInOverview="0" layerid="wbd_matched20190212135052151" visible="0"/>
+        <legendlayerfile isInOverview="0" layerid="wbd_matched20190212135052151" visible="1"/>
       </filegroup>
     </legendlayer>
     <legendlayer drawingOrder="-1" open="true" checked="Qt::Unchecked" name="net_grouped" showFeatureCount="0">
@@ -2397,7 +2399,7 @@ def my_form_open(dialog, layer, feature):
       <renderer-v2 forceraster="0" symbollevels="0" type="RuleRenderer" enableorderby="0">
         <rules key="{b81e7ea0-c71e-43c8-a119-33e1ef9eaf38}">
           <rule checkstate="0" filter=" &quot;trib_intersect&quot; = 't'" key="{581671f0-8bcc-4a51-ada4-e9a45d07d5c6}" symbol="0" label="Trib Confluence Intersection"/>
-          <rule filter=" &quot;trib_no_intersect&quot; = 't'" key="{e155a0a4-6752-44a6-8954-365e56affdfe}" symbol="1" label="Path No Intersection"/>
+          <rule checkstate="0" filter=" &quot;trib_no_intersect&quot; = 't'" key="{e155a0a4-6752-44a6-8954-365e56affdfe}" symbol="1" label="Path No Intersection"/>
           <rule checkstate="0" filter=" &quot;headwater_error&quot; = 't'" key="{f62f1613-2aa5-4616-a7ec-2b735d6d9a63}" symbol="2" label="Headwater Overlap"/>
         </rules>
         <symbols>
