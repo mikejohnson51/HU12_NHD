@@ -91,8 +91,15 @@ par_linker <- function(lp_list) {
       bind_cols(lp_list$hu_points) %>%
       left_join(select(st_set_geometry(lp_list$lp_geom, NULL), COMID, Hydroseq), by = "COMID") %>%
       group_by(hu12) %>%
-      filter(Hydroseq == min(Hydroseq) & REACH_meas == min(REACH_meas)) %>%
-      ungroup()
+      filter(Hydroseq == min(Hydroseq))
+    
+    if(any(group_size(linked) > 1)) {
+      linked <- linked %>%
+        group_by(hu12, REACHCODE) %>%
+        filter(REACH_meas == min(REACH_meas))
+    }
+    
+    linked <- ungroup(linked)
   },
   error = function(e) warning(paste(lp_list$lp_search, e)),
   warning = function(w) warning(paste(lp_list$lp_search, w)))

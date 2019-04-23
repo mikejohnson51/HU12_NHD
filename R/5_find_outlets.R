@@ -144,7 +144,7 @@ if(file.exists(linked_points_gpkg)) {
   gc()
   
   library(snow)
-  cl <- parallel::makeCluster(rep("localhost", cores), type = "SOCK", outfile = "logs/par.log")
+  cl <- parallel::makeCluster(rep("localhost", cores), type = "SOCK", outfile = "par.log")
 
   linked <- parLapply(cl, in_list, par_linker)
 

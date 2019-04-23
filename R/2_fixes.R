@@ -476,3 +476,5 @@ fixes <- tibble(HUC12 = character(0),
                  comment =  "UNKNOWN fix")) %>%
   bind_rows(list(HUC12 = "090100032207", TOHUC = "090100030000",
                  comment =  "UNKNOWN fix"))
+
+readr::write_csv(fixes, "out/tohuc_fixes.csv")

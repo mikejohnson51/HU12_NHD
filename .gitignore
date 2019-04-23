@@ -8,4 +8,5 @@ data
 *.gpkg
 *.gdb
 *.gif
+*.csv
 png/
