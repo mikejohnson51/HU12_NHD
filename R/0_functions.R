@@ -1,9 +1,9 @@
-par_fun <- function(start_comid, net_atts, net_prep, wbd_atts) {
+par_fun <- function(start_comid, net_atts, net_prep, wbd_atts, temp_dir) {
   library(nhdplusTools)
   library(sf)
   library(dplyr)
   
-  out_file <- paste0("cache/temp/", start_comid, ".rds")
+  out_file <- paste0(temp_dir, start_comid, ".rds")
   
   if(!file.exists(out_file)) {
     

@@ -1,11 +1,10 @@
 
-if(file.exists(process_cache)) {
-  
-  message(paste("Found", process_cache, "nothing to do."))
-  
-} else {
-  
-  message("Loading WBD and NHD building cache.")
+get_net <- function(natdb) {
+  return(read_sf(natdb, "NHDFlowline_Network") %>%
+    st_zm())
+}
+
+get_wbd <- function(natdb, fixes) {
   wbd <- read_sf(natdb, "HUC12")
   wbd <- select(wbd, HUC12 = HUC_12, TOHUC = HU_12_DS)
   wbd <- filter(wbd, !grepl("^20.*|^19.*|^21.*|^22.*", wbd$HUC12))
@@ -17,15 +16,11 @@ if(file.exists(process_cache)) {
   }
   
   wbd <- st_transform(wbd, 5070)
-  write_sf(wbd, "wbd_viz.gpkg", "wbd_viz")
   
-  if(file.exists(net_cache)) {
-    net <- readRDS(net_cache)
-  } else {
-    net <- read_sf(natdb, "NHDFlowline_Network") %>%
-      st_zm()
-    saveRDS(net, net_cache)
-  }
+  return(wbd)
+}
+
+get_process_data <- function(natdb, net, wbd) {
   
   net_prep <- prepare_nhdplus(net, 0, 0, TRUE, TRUE) %>%
     left_join(select(net, COMID, DnLevelPat, AreaSqKM)) %>%
@@ -40,8 +35,7 @@ if(file.exists(process_cache)) {
                                          ID = COMID, toID = toCOMID,
                                          area = AreaSqKM))
   
-  net_atts <- st_set_geometry(net, NULL)[ ,1:40]
-  rm(net)
+  net <- st_set_geometry(net, NULL)[ ,1:40]
   
   net_prep <- st_transform(net_prep, 5070)
   
@@ -51,15 +45,12 @@ if(file.exists(process_cache)) {
   net_prep <- st_join(net_prep, select(wbd, HUC12, TOHUC)) %>%
     st_set_geometry(NULL)
   
-  wbd_atts <- st_set_geometry(wbd, NULL)
+  wbd <- st_set_geometry(wbd, NULL)
   
-  rm(wbd)
-  rm(fix)
-  rm(fixes)
-  
-  save(net_atts, net_prep, wbd_atts, file = process_cache)
-  
-  rm(net_atts)
-  rm(net_prep)
-  rm(wbd_atts)
+  return(list(net_atts = net, net_prep = net_prep, wbd_atts = wbd))
+}
+
+
+proj_net <- function(net) {
+  st_transform(net, 5070)
 }

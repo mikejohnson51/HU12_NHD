@@ -1,8 +1,8 @@
-hu_joiner <- "out/map_joiner.csv"
-if(file.exists(hu_joiner)) {
-  message(hu_joiner, " exists, nothing to do.")
-} else {
-  load(process_cache)
+get_hu_joiner <- function(hu_joiner_file, net_prep, cores, temp_dir = "temp/") {
+  
+  wbd_atts <- net_prep$wbd_atts
+  net_atts <- net_prep$net_atts
+  net_prep <- net_prep$net_prep
   
   igraph::is.dag(igraph::graph_from_data_frame(wbd_atts))
   
@@ -19,11 +19,14 @@ if(file.exists(hu_joiner)) {
   
   library(snow)
   
-  cl <- parallel::makeCluster(rep("localhost", cores), type = "SOCK", outfile = "job.log")
+  cl <- parallel::makeCluster(rep("localhost", cores), 
+                              type = "SOCK", 
+                              outfile = "job.log")
   
   to_run <- GNIS_terminals$COMID
   
-  already_run <- list.files("cache/temp/", pattern = "*.rds")
+  dir.create(temp_dir, showWarnings = FALSE)
+  already_run <- list.files(temp_dir, pattern = "*.rds")
   already_run <- as.integer(gsub(".rds", "", already_run))
   
   to_run <- to_run[!to_run %in% already_run]
@@ -31,24 +34,21 @@ if(file.exists(hu_joiner)) {
   all_GNIS_outlets <- parLapply(cl, to_run, par_fun,
                                 net_atts = net_atts,
                                 net_prep = net_prep,
-                                wbd_atts = wbd_atts)
+                                wbd_atts = wbd_atts,
+                                temp_dir = temp_dir)
   
   stopCluster(cl)
   
-  out_files <- list.files("cache/temp/", full.names = TRUE)
+  out_files <- list.files(temp_dir, full.names = TRUE)
   
   all <- sapply(out_files, readRDS, USE.NAMES = TRUE)
   
-  names(all) <- gsub("cache/temp/", "", names(all))
+  names(all) <- gsub(temp_dir, "", names(all))
   names(all) <- gsub(".rds", "", names(all))
   
   all <- bind_rows(all)
   
-  readr::write_csv(all, hu_joiner)
+  readr::write_csv(all, hu_joiner_file)
   
-  rm(all)
-  rm(GNIS_terminals)
-  rm(net_atts)
-  rm(net_prep)
-  rm(wbd_atts)
+  return(all)
 }

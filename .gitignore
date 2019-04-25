@@ -10,3 +10,5 @@ data
 *.gif
 *.csv
 png/
+*.log
+.drake

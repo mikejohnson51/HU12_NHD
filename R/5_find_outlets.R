@@ -1,17 +1,4 @@
-if(file.exists(points_cache)) {
-  message(points_cache, " exists. Skipping creation.")
-  points <- readRDS("cache/points_out.rds")
-} else {
-  hu_lp <- readr::read_csv(hu_joiner)
-  
-  # Found duplicate levelpaths for some HUs that can be removed.
-  hu_lp <- group_by(hu_lp, HUC12) %>%
-    filter(corrected_LevelPathI == min(corrected_LevelPathI)) %>%
-    ungroup()
-  
-  net <- load_nhd(natdb, net_cache)
-  
-  message("loading WBD")
+get_exclusions <- function(natdb) {
   wbd <- read_sf(natdb, "HUC12")
   
   wbd_type <- select(st_set_geometry(wbd, NULL), 
@@ -29,28 +16,32 @@ if(file.exists(points_cache)) {
   
   exclude <- unique(c(exclude_type, exclude_first_order_toHUC))
   
-  saveRDS(exclude, "cache/exclude.rds")
+  return(exclude)
+}
+
+get_points_out <- function(hu_lp, net, wbd, exclude) {
+  
+  # Found duplicate levelpaths for some HUs that can be removed.
+  hu_lp <- group_by(hu_lp, HUC12) %>%
+    filter(corrected_LevelPathI == min(corrected_LevelPathI)) %>%
+    ungroup()
   
   wbd <- filter(wbd, !HUC12 %in% exclude)
   hu_lp <- filter(hu_lp, !HUC12 %in% exclude)
   
-  rm(wbd_type)
-  rm(exclude, exclude_first_order_toHUC, exclude_type)
-  
   lp_ids <- unique(hu_lp$corrected_LevelPathI)
+  
+  net <- st_transform(net, st_crs(wbd))
   
   points <- setNames(lapply(X = lp_ids, 
                             FUN = run_lp, 
                             net = net, hu_lp = hu_lp, wbd = wbd),
                      lp_ids)
   
-  saveRDS(points, "cache/points_out.rds")
+  return(points)
 }
 
-if(file.exists(lp_hu_points)) {
-  message(lp_hu_points, " exists. Skipping creation.")
-} else {
-  
+write_lp_hu_points <- function(points, wbd, lp_hu_points_file) {
   lp_points <- lapply(names(points), 
                       function(lp, points) {
                         hu_points <- bind_rows(lapply(points[lp], hu_points_fun))
@@ -63,19 +54,11 @@ if(file.exists(lp_hu_points)) {
     st_sf()
   
   st_crs(lp_points) <- st_crs(wbd)
-  write_sf(lp_points, lp_hu_points)
+  write_sf(lp_points, lp_hu_points_file)
+  return(lp_points)
 }
 
-if(file.exists(linked_points_gpkg)) {
-  message(linked_points_gpkg, " exists, nothing to do.")
-} else {
-
-
-  if(!exists("exclude")) {
-    exclude <- readRDS("cache/exclude.rds")
-  }
-
-  lp_points <- read_sf(lp_hu_points)
+get_linked_points <- function(exclude, lp_points, net, linked_points_gpkg, cores) {
 
   lp_points <- lp_points %>%
     filter(!hu12 %in% exclude) %>%
@@ -96,10 +79,6 @@ if(file.exists(linked_points_gpkg)) {
 
   na_points <- filter(na_points, !hu12 %in% both)
   lp_points <- filter(lp_points, !hu12 %in% both)
-
-  if(!exists("net")) {
-    net <- load_nhd(natdb, net_cache)
-  }
   
   na_outlets <- net %>%
     filter(LevelPathI %in% na_points$lp) %>%
@@ -126,7 +105,8 @@ if(file.exists(linked_points_gpkg)) {
   na_outlet_coords$offset <- 0
 
   na_outlet_coords <- select(na_outlet_coords, 
-                             COMID, REACHCODE, REACH_meas, offset, HUC12 = hu12, LevelPathI)
+                             COMID, REACHCODE, REACH_meas, 
+                             offset, HUC12 = hu12, LevelPathI)
 
   lp_list <- unique(lp_points$lp)
 
@@ -144,7 +124,8 @@ if(file.exists(linked_points_gpkg)) {
   gc()
   
   library(snow)
-  cl <- parallel::makeCluster(rep("localhost", cores), type = "SOCK", outfile = "par.log")
+  cl <- parallel::makeCluster(rep("localhost", cores), 
+                              type = "SOCK", outfile = "par.log")
 
   linked <- parLapply(cl, in_list, par_linker)
 
@@ -153,10 +134,14 @@ if(file.exists(linked_points_gpkg)) {
   linked <- st_sf(do.call(rbind, linked), crs = st_crs(na_outlet_coords)) %>%
     select(COMID, REACHCODE, REACH_meas, offset, HUC12 = hu12, LevelPathI = lp)
   
+  names(linked)[names(linked) == attr(linked, "sf_column")] <- 
+    names(na_outlet_coords)[names(na_outlet_coords) == attr(na_outlet_coords, "sf_column")]
+  
+  attr(linked, "sf_column") <- attr(na_outlet_coords, "sf_column")
+  
   linked <- rbind(linked, na_outlet_coords) %>%
     st_sf()
 
   write_sf(linked, linked_points_gpkg)
+  return(linked)
 }
-
-
