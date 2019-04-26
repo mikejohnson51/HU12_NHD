@@ -1,10 +1,9 @@
-get_hu_joiner <- function(hu_joiner_file, net_prep, cores, temp_dir = "temp/") {
+get_hu_joiner <- function(hu_joiner_file, net_prep, 
+                          cores, temp_dir = "temp/") {
   
   wbd_atts <- net_prep$wbd_atts
   net_atts <- net_prep$net_atts
   net_prep <- net_prep$net_prep
-  
-  igraph::is.dag(igraph::graph_from_data_frame(wbd_atts))
   
   GNIS_terminals <- net_atts %>%
     select(GNIS_ID, TerminalPa) %>%
@@ -16,8 +15,6 @@ get_hu_joiner <- function(hu_joiner_file, net_prep, cores, temp_dir = "temp/") {
     filter(COMID %in% net_prep$COMID) %>%
     group_by(TerminalPa) %>%
     filter(Hydroseq == min(Hydroseq))
-  
-  library(snow)
   
   cl <- parallel::makeCluster(rep("localhost", cores), 
                               type = "SOCK", 

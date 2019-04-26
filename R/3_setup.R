@@ -1,10 +1,12 @@
 
-get_net <- function(natdb) {
+get_net <- function(natdb, prj) {
   return(read_sf(natdb, "NHDFlowline_Network") %>%
-    st_zm())
+           st_zm() %>%
+           st_transform(prj)
+      )
 }
 
-get_wbd <- function(natdb, fixes) {
+get_wbd <- function(natdb, fixes, prj) {
   wbd <- read_sf(natdb, "HUC12")
   wbd <- select(wbd, HUC12 = HUC_12, TOHUC = HU_12_DS)
   wbd <- filter(wbd, !grepl("^20.*|^19.*|^21.*|^22.*", wbd$HUC12))
@@ -15,12 +17,12 @@ get_wbd <- function(natdb, fixes) {
     if(!igraph::is.dag(igraph::graph_from_data_frame(st_set_geometry(wbd, NULL)))) message(fix)
   }
   
-  wbd <- st_transform(wbd, 5070)
+  wbd <- st_transform(wbd, prj)
   
   return(wbd)
 }
 
-get_process_data <- function(natdb, net, wbd) {
+get_process_data <- function(natdb, net, wbd, simp) {
   
   net_prep <- prepare_nhdplus(net, 0, 0, TRUE, TRUE) %>%
     left_join(select(net, COMID, DnLevelPat, AreaSqKM)) %>%
@@ -37,10 +39,8 @@ get_process_data <- function(natdb, net, wbd) {
   
   net <- st_set_geometry(net, NULL)[ ,1:40]
   
-  net_prep <- st_transform(net_prep, 5070)
-  
-  net_prep <- st_simplify(net_prep, 10)
-  wbd <- st_simplify(wbd, 10)
+  net_prep <- st_simplify(net_prep, simp)
+  wbd <- st_simplify(wbd, simp)
   
   net_prep <- st_join(net_prep, select(wbd, HUC12, TOHUC)) %>%
     st_set_geometry(NULL)
@@ -48,9 +48,4 @@ get_process_data <- function(natdb, net, wbd) {
   wbd <- st_set_geometry(wbd, NULL)
   
   return(list(net_atts = net, net_prep = net_prep, wbd_atts = wbd))
-}
-
-
-proj_net <- function(net) {
-  st_transform(net, 5070)
 }
