@@ -13,3 +13,20 @@ download_data <- function(nhd_dir, nhd_file, nhdplus_url) {
   
   return(out)
 }
+
+download_wbd <- function(wbd_dir, wbd_zip_file, wbd_gdb_file, wbd_url) {
+  out <- file.path(wbd_dir, wbd_gdb_file)
+  
+  if(!dir.exists(out)) {
+    dir.create(wbd_dir, showWarnings = FALSE)
+    
+    zip_file <- file.path(wbd_dir, paste0(wbd_zip_file))
+    
+    if(!file.exists(zip_file)) {
+      download.file(wbd_url, zip_file)
+    }
+    
+    unzip(zip_file, exdir = wbd_dir)
+  }
+  
+}
