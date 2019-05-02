@@ -61,12 +61,12 @@ run_lp <- function(lp_id, net, hu_lp, wbd) {
     
     hu_ids <- filter(hu_lp, corrected_LevelPathI == lp_id)
     hus <- filter(wbd, HUC12 %in% hu_ids$HUC12)
-    hus$Shape <- st_cast(hus$Shape, "MULTILINESTRING")
+    st_geometry(hus) <- st_cast(st_geometry(hus), "MULTILINESTRING")
     
     out <- setNames(lapply(1:nrow(hus), 
                            function(i, lp, hus) {
                              suppressMessages(
-                               st_intersection(lp, hus$Shape[i])
+                               st_intersection(lp, st_geometry(hus)[i])
                              )
                            }, 
                            lp = lp, hus = hus), 

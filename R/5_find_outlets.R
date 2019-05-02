@@ -31,7 +31,7 @@ get_points_out <- function(hu_lp, net, wbd, exclude) {
   
   lp_ids <- unique(hu_lp$corrected_LevelPathI)
   
-  net <- st_transform(net, st_crs(wbd))
+  if(st_crs(net) != st_crs(wbd)) net <- st_transform(net, st_crs(wbd))
   
   points <- setNames(lapply(X = lp_ids, 
                             FUN = run_lp, 

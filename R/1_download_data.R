@@ -28,5 +28,5 @@ download_wbd <- function(wbd_dir, wbd_zip_file, wbd_gdb_file, wbd_url) {
     
     unzip(zip_file, exdir = wbd_dir)
   }
-  
+  return(out)
 }

@@ -1,9 +1,5 @@
-get_hu_joiner <- function(hu_joiner_file, net_prep, 
-                          cores, temp_dir = "temp/") {
-  
-  wbd_atts <- net_prep$wbd_atts
-  net_atts <- net_prep$net_atts
-  net_prep <- net_prep$net_prep
+get_hu_joiner <- function(hu_joiner_file, net_atts, wbd_atts, 
+                          net_int, cores, temp_dir = "temp/") {
   
   GNIS_terminals <- net_atts %>%
     select(GNIS_ID, TerminalPa) %>%
@@ -12,7 +8,7 @@ get_hu_joiner <- function(hu_joiner_file, net_prep,
     distinct() %>%
     left_join(select(net_atts, COMID, LevelPathI, Hydroseq), 
               by = c("TerminalPa" = "LevelPathI")) %>%
-    filter(COMID %in% net_prep$COMID) %>%
+    filter(COMID %in% net_int$COMID) %>%
     group_by(TerminalPa) %>%
     filter(Hydroseq == min(Hydroseq))
   
@@ -30,7 +26,7 @@ get_hu_joiner <- function(hu_joiner_file, net_prep,
   
   all_GNIS_outlets <- parLapply(cl, to_run, par_fun,
                                 net_atts = net_atts,
-                                net_prep = net_prep,
+                                net_prep = net_int,
                                 wbd_atts = wbd_atts,
                                 temp_dir = temp_dir)
   
