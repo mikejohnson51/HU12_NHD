@@ -87,7 +87,7 @@ par_linker <- function(lp_list) {
   library(sf)
   linked <- NULL
   tryCatch({
-    linked <- get_flowline_index(lp_list$lp_geom, lp_list$hu_points, search_radius = 0.001) %>%
+    linked <- get_flowline_index(lp_list$lp_geom, lp_list$hu_points, search_radius = 1000) %>%
       bind_cols(lp_list$hu_points) %>%
       left_join(select(st_set_geometry(lp_list$lp_geom, NULL), COMID, Hydroseq), by = "COMID") %>%
       group_by(hu12) %>%

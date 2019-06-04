@@ -24,7 +24,10 @@ geom_plot_data <- function(hu_grouped, hu12, net, lookup, filter) {
     ungroup()
   
   hu_grouped <- filter(hu_grouped, corrected_LevelPathI %in% lookup$corrected_LevelPathI)
-  hu12 <- filter(hu12, HUC12 %in% lookup$HUC12)
+  hu12 <- filter(hu12, HUC12 %in% lookup$HUC12) %>%
+    group_by(HUC12)
+  
+  hu12 <- summarise(hu12, TOHUC = TOHUC[1])
   
   fromHUC <- sapply(hu12$HUC12, fromHUC_finder, 
                     hucs = hu12$HUC12, tohucs = hu12$TOHUC)
@@ -41,6 +44,7 @@ create_png <- function(plot_data, hu_joiner) {
   net <- plot_data$net
   hu_grouped <- plot_data$hu_grouped
   lookup <- plot_data$lookup
+  
   hu12_boundaries <- st_as_sf(plot_data$hu12_boundaries)
   
   dir.create("png", showWarnings = FALSE)

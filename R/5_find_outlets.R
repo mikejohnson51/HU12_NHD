@@ -10,7 +10,7 @@ get_exclusions <- function(natdb) {
     rename(HUC12 = HUC_12, TOHUC = HU_12_DS)
   
   # Exclusions where river-flow does not apply:
-  exclude_type <- wbd_type$HUC12[wbd_type$type %in% c("F", "I", "C")] # frontal closed or island
+  exclude_type <- wbd_type$HUC12[wbd_type$type %in% c("F", "I", "C", "U")] # frontal closed or island
   exclude_first_order_toHUC <- wbd$HUC12[wbd$TOHUC %in% c("OCEAN", "CANADA", "GEATLAKES", "UNKNOWN") & 
                                            !wbd$HUC12 %in% wbd$TOHUC] # Unless it has something flowing to it.
   
@@ -123,7 +123,6 @@ get_linked_points <- function(exclude, lp_points, net, linked_points_gpkg, cores
 
   gc()
   
-  library(snow)
   cl <- parallel::makeCluster(rep("localhost", cores), 
                               type = "SOCK", outfile = "par.log")
 

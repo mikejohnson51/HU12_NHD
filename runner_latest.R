@@ -31,8 +31,8 @@ plan <- drake_plan(
   linked_points_gpkg = "out/linked_points.gpkg",
   wbd_viz_gpkg = "out/wbd_viz.gpkg",
   temp_dir = "temp/",
-  wbd_gdb = download_wbd(wbd_dir, wbd_zip_file, wbd_gdb_file, wbd_url),
   natdb = download_data(nhd_dir, nhd_file, nhdplus_url),
+  wbd_gdb = download_wbd(wbd_dir, wbd_zip_file, wbd_gdb_file, wbd_url),
   fixes = get_fixes(wbd_version),
   net = get_net(natdb, prj),
   wbd = get_wbd(wbd_gdb, fixes, prj),
@@ -56,7 +56,7 @@ plan <- drake_plan(
   write_wbd_viz_grouped = write_sf(wbd_grouped, wbd_viz_gpkg, "wbd_grouped"),
   plot_data = geom_plot_data(wbd_grouped, wbd, net, hu_joiner, "^03.*"),
   out_png = create_png(plot_data, hu_joiner)
-  )
+)
 
 make(plan)
 
