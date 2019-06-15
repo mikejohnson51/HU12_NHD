@@ -1,10 +1,8 @@
 get_hu_joiner <- function(hu_joiner_file, net_atts, wbd_atts, 
                           net_int, cores, temp_dir = "temp/") {
   
-  GNIS_terminals <- net_atts %>%
-    select(GNIS_ID, TerminalPa) %>%
-    filter(GNIS_ID != " ") %>%
-    select(-GNIS_ID) %>%
+  terminals <- net_atts %>%
+    select(TerminalPa) %>%
     distinct() %>%
     left_join(select(net_atts, COMID, LevelPathI, Hydroseq), 
               by = c("TerminalPa" = "LevelPathI")) %>%
@@ -14,21 +12,21 @@ get_hu_joiner <- function(hu_joiner_file, net_atts, wbd_atts,
   
   cl <- parallel::makeCluster(rep("localhost", cores), 
                               type = "SOCK", 
-                              outfile = "job.log")
+                              outfile = "hu_joiner.log")
   
-  to_run <- GNIS_terminals$COMID
+  to_run <- terminals$COMID
   
   dir.create(temp_dir, showWarnings = FALSE)
   already_run <- list.files(temp_dir, pattern = "*.rds")
-  already_run <- as.integer(gsub(".rds", "", already_run))
+  already_run <- as.numeric(gsub(".rds", "", already_run))
   
   to_run <- to_run[!to_run %in% already_run]
   
-  all_GNIS_outlets <- parLapply(cl, to_run, par_fun,
-                                net_atts = net_atts,
-                                net_prep = net_int,
-                                wbd_atts = wbd_atts,
-                                temp_dir = temp_dir)
+  all_outlets <- parLapply(cl, to_run, par_fun,
+                           net_atts = net_atts,
+                           net_prep = net_int,
+                           wbd_atts = wbd_atts,
+                           temp_dir = temp_dir)
   
   stopCluster(cl)
   

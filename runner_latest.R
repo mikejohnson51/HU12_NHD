@@ -26,10 +26,10 @@ plan <- drake_plan(
   wbd_zip_file = "WBD_National_GDB.zip",
   wbd_gdb_file = "WBD_National_GDB.gdb",
   wbd_url = "https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/WBD/National/GDB/WBD_National_GDB.zip",
-  hu_joiner_file = "out/map_joiner.csv",
-  lp_hu_points_file = "out/lp_hu_points.gpkg",
-  linked_points_gpkg = "out/linked_points.gpkg",
-  wbd_viz_gpkg = "out/wbd_viz.gpkg",
+  hu_joiner_file = "out_nhdp_latest/map_joiner.csv",
+  lp_hu_points_file = "out_nhdp_latest/lp_hu_points.gpkg",
+  linked_points_gpkg = "out_nhdp_latest/linked_points.gpkg",
+  wbd_viz_gpkg = "out_nhdp_latest/wbd_viz.gpkg",
   temp_dir = "temp/",
   natdb = download_data(nhd_dir, nhd_file, nhdplus_url),
   wbd_gdb = download_wbd(wbd_dir, wbd_zip_file, wbd_gdb_file, wbd_url),
@@ -55,7 +55,7 @@ plan <- drake_plan(
   write_wbd_viz_matched = write_sf(wbd_matched, wbd_viz_gpkg, "wbd_matched"),
   write_wbd_viz_grouped = write_sf(wbd_grouped, wbd_viz_gpkg, "wbd_grouped"),
   plot_data = geom_plot_data(wbd_grouped, wbd, net, hu_joiner, "^03.*"),
-  out_png = create_png(plot_data, hu_joiner)
+  out_png = create_png(plot_data, hu_joiner, "out_nhdp_latest/png/")
 )
 
 make(plan)

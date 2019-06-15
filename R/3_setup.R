@@ -1,8 +1,49 @@
+get_fline <- function(gdb) {
+  fline <- "NHDFlowline"
+  vaa <- "NHDPlusFlowlineVAA"
+  left_join(
+    read_sf(gdb, fline), 
+    suppressWarnings(read_sf(gdb, vaa)), 
+    by = "NHDPlusID")
+}
+
+get_nhdplushr <- function(hr_dir, hu02_list) {
+  gdb_files <- c()
+  
+  for(hu02 in hu02_list) {
+    gdb_files <- c(gdb_files, 
+                   list.files(hr_dir, pattern = "GDB.gdb", 
+                              full.names = TRUE))
+  }
+  
+  layer <- lapply(gdb_files, get_fline)
+  
+  out_gpkg <- paste0(hr_dir, "/", paste(hu02, collapse = "_"), ".gpkg")
+  
+  do.call(rbind, layer) %>%
+    st_sf() %>%
+    write_sf(layer = "NHDFlowline", dsn = out_gpkg)
+
+  return(out_gpkg)
+}
+
 
 get_net <- function(natdb, prj) {
-  return(read_sf(natdb, "NHDFlowline_Network") %>%
-           st_zm() %>%
-           st_transform(prj)
+  if("NHDFlowline_Network" %in% st_layers(natdb)$name) {
+    out <- read_sf(natdb, "NHDFlowline_Network")
+  } else {
+    out <- read_sf(natdb, "NHDFlowline")
+  }
+  
+  if("NHDPlusID" %in% names(out)) {
+    out <- rename(out, COMID = NHDPlusID, LENGTHKM = LengthKM, FTYPE = FType, 
+                  TotDASqKM = TotDASqKm, Hydroseq = HydroSeq, Pathlength = PathLength,
+                  AreaSqKM = AreaSqKm, DnHydroseq = DnHydroSeq)
+    out$TerminalFl[which(!out$ToNode %in% out$FromNode)] <- 1
+  }
+    return(out %>%
+             st_zm() %>%
+             st_transform(prj)
   )
 }
 
@@ -54,6 +95,7 @@ get_wbd <- function(wbd_gdb, fixes, prj) {
 }
 
 prep_net <- function(net, simp) {
+  
   net_prep <- prepare_nhdplus(net, 
                               min_network_size = 20, # sqkm
                               min_path_length = 0, # sqkm
@@ -72,14 +114,14 @@ prep_net <- function(net, simp) {
                                          ID = COMID, toID = toCOMID,
                                          area = AreaSqKM))
   
-  net_prep <- st_simplify(net_prep, simp)
-  
+  net_prep <- st_simplify(net_prep, dTolerance = simp)
+    
   return(net_prep)
 }
 
 get_process_data <- function(net_prep, wbd, simp) {
   
-  wbd <- select(st_simplify(wbd, simp), HUC12, TOHUC)
+  wbd <- select(st_simplify(wbd, dTolerance = simp), HUC12, TOHUC)
   
   net_prep <- st_join(net_prep, wbd) %>%
     st_set_geometry(NULL)

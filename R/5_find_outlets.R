@@ -1,16 +1,25 @@
-get_exclusions <- function(natdb) {
-  wbd <- read_sf(natdb, "HUC12")
+get_exclusions <- function(wbd_gdb) {
   
-  wbd_type <- select(st_set_geometry(wbd, NULL), 
-                     HUC12 = HUC_12, type = HU_12_TYPE) %>%
-    distinct()
+  if("HUC12" %in% st_layers(wbd_gdb)$name) {
+    wbd <- read_sf(wbd_gdb, "HUC12")
+    wbd <- rename(wbd, HUC12 = HUC_12, TOHUC = HU_12_DS)
+  } else {
+    wbd <- read_sf(wbd_gdb, "WBDHU12")
+  }
   
-  wbd <- group_by(wbd, HUC_12) %>%
-    summarise(HU_12_DS = HU_12_DS[1]) %>%
-    rename(HUC12 = HUC_12, TOHUC = HU_12_DS)
+  wbd_type <- st_set_geometry(wbd, NULL)
+  
+  if("HUTYPE" %in% names(wbd_type)) {
+    wbd_type <- distinct(select(wbd_type, HUC12, HUTYPE))
+  } else {
+    wbd_type <- distinct(select(wbd_type, HUC12, HUTYPE = HU_12_TYPE))
+  }
+  
+  wbd <- group_by(wbd, HUC12) %>%
+    summarise(TOHUC = TOHUC[1])
   
   # Exclusions where river-flow does not apply:
-  exclude_type <- wbd_type$HUC12[wbd_type$type %in% c("F", "I", "C", "U")] # frontal closed or island
+  exclude_type <- wbd_type$HUC12[wbd_type$HUTYPE %in% c("F", "I", "C", "U")] # frontal closed or island
   exclude_first_order_toHUC <- wbd$HUC12[wbd$TOHUC %in% c("OCEAN", "CANADA", "GEATLAKES", "UNKNOWN") & 
                                            !wbd$HUC12 %in% wbd$TOHUC] # Unless it has something flowing to it.
   
@@ -21,7 +30,6 @@ get_exclusions <- function(natdb) {
 
 get_points_out <- function(hu_lp, net, wbd, exclude) {
   
-  # Found duplicate levelpaths for some HUs that can be removed.
   hu_lp <- group_by(hu_lp, HUC12) %>%
     filter(corrected_LevelPathI == min(corrected_LevelPathI)) %>%
     ungroup()
@@ -31,7 +39,9 @@ get_points_out <- function(hu_lp, net, wbd, exclude) {
   
   lp_ids <- unique(hu_lp$corrected_LevelPathI)
   
-  if(st_crs(net) != st_crs(wbd)) net <- st_transform(net, st_crs(wbd))
+  if(st_crs(net) != st_crs(wbd)) {
+    net <- st_transform(net, st_crs(wbd))
+  }
   
   points <- setNames(lapply(X = lp_ids, 
                             FUN = run_lp, 
@@ -60,6 +70,8 @@ write_lp_hu_points <- function(points, wbd, lp_hu_points_file) {
 
 get_linked_points <- function(exclude, lp_points, net, linked_points_gpkg, cores) {
 
+  net <- rename(net, REACHCODE = ReachCode.x)
+  
   lp_points <- lp_points %>%
     filter(!hu12 %in% exclude) %>%
     mutate(lp = as.numeric(lp)) %>%

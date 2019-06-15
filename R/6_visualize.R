@@ -40,15 +40,15 @@ geom_plot_data <- function(hu_grouped, hu12, net, lookup, filter) {
   return(list(net = net, hu_grouped = hu_grouped, lookup = lookup, hu12_boundaries = hu12_boundaries))
 }
 
-create_png <- function(plot_data, hu_joiner) {
+create_png <- function(plot_data, hu_joiner, out_folder) {
   net <- plot_data$net
   hu_grouped <- plot_data$hu_grouped
   lookup <- plot_data$lookup
   
   hu12_boundaries <- st_as_sf(plot_data$hu12_boundaries)
   
-  dir.create("png", showWarnings = FALSE)
-  unlink("png/*")
+  dir.create(out_folder, showWarnings = FALSE)
+  unlink(paste0(out_folder, "*"))
   
   # Plot order:
   # 1) mainstem river and total upstream drainage boundary
@@ -66,7 +66,7 @@ create_png <- function(plot_data, hu_joiner) {
   # levelpath <- 290007998
   
   plotter <- function(i) {
-    png(filename = paste0("png/", i, ".png"), width = 600, height = 768, units = "px")
+    png(filename = paste0(out_folder, i, ".png"), width = 600, height = 768, units = "px")
     par(mar=c(0, 0, 0, 0))
     plot(st_geometry(viz_basinboundary), lwd = 0.1, border = "white", col = NA)
     plot(st_geometry(viz_mainstem), col = "blue", add = TRUE)
@@ -92,7 +92,7 @@ create_png <- function(plot_data, hu_joiner) {
   }
   
   plotter <- function(i) {
-    png(filename = paste0("png/", i, ".png"), width = 450, height = 768, units = "px")
+    png(filename = paste0(out_folder, i, ".png"), width = 450, height = 768, units = "px")
     par(mar=c(0, 0, 0, 0))
     plot(st_geometry(viz_basinboundary), lwd = 0.5)
     plot(st_geometry(viz_mainstem), col = "blue", add = TRUE)
@@ -116,7 +116,7 @@ create_png <- function(plot_data, hu_joiner) {
   intersected_hydrounits <- filter(intersected, intersected_LevelPathI %in% levelpath)
   corrected_hydrounits <- filter(intersected, corrected_LevelPathI %in% levelpath)
   
-  png(filename = "png/fig2.png", width = 450, height = 768, units = "px")
+  png(filename = paste0(out_folder, "fig2.png"), width = 450, height = 768, units = "px")
   par(mar=c(0, 0, 0, 0))
   plot(st_geometry(viz_basinboundary), lwd = 0.5)
   plot(st_geometry(intersected_hydrounits), lwd = 0.1, border = "grey", col = NA, add = TRUE)
@@ -127,7 +127,7 @@ create_png <- function(plot_data, hu_joiner) {
   head_hu <- unique(filter(lookup, corrected_LevelPathI == levelpath)$head_HUC12)
   viz_head <- filter(hu12_boundaries, HUC12 == head_hu)
   
-  png(filename = "png/fig3.png", width = 450, height = 768, units = "px")
+  png(filename = paste0(out_folder, "fig3.png"), width = 450, height = 768, units = "px")
   par(mar=c(0, 0, 0, 0))
   plot(st_geometry(viz_basinboundary), lwd = 0.5)
   plot(st_geometry(intersected_hydrounits), lwd = 0.1, border = "grey", col = NA, add = TRUE)
@@ -136,7 +136,7 @@ create_png <- function(plot_data, hu_joiner) {
   plot(st_geometry(viz_head), lwd = 0.5, border = "red", col = "NA", add = TRUE)
   dev.off()
   
-  png(filename = "png/fig4.png", width = 450, height = 768, units = "px")
+  png(filename = paste0(out_folder, "fig4.png"), width = 450, height = 768, units = "px")
   par(mar=c(0, 0, 0, 0))
   plot(st_geometry(viz_basinboundary), lwd = 0.5)
   plot(st_geometry(intersected_hydrounits), lwd = 0.5, border = "grey", col = NA, add = TRUE)
@@ -149,7 +149,7 @@ create_png <- function(plot_data, hu_joiner) {
   levelpath <- unique(c(levelpath, next_lp))
   viz_mainstem <- filter(net, LevelPathI %in% levelpath)
   
-  png(filename = "png/fig5.png", width = 450, height = 768, units = "px")
+  png(filename = paste0(out_folder, "fig5.png"), width = 450, height = 768, units = "px")
   par(mar=c(0, 0, 0, 0))
   plot(st_geometry(viz_basinboundary), lwd = 0.5)
   plot(st_geometry(intersected_hydrounits), lwd = 0.5, border = "grey", col = NA, add = TRUE)
@@ -161,7 +161,7 @@ create_png <- function(plot_data, hu_joiner) {
   
   
   plotter <- function(i) {
-    png(filename = paste0("png/", i, ".png"), width = 512, height = 768, units = "px")
+    png(filename = paste0(out_folder, i, ".png"), width = 512, height = 768, units = "px")
     plot(st_geometry(viz_basinboundary), lwd = 0.1, border = "grey", col = NA)
     plot(st_geometry(viz_mainstem), col = "blue", add = TRUE)
     plot(st_geometry(viz_hydrounits), lwd = 0.5, border = "grey", col = NA, add = TRUE)
