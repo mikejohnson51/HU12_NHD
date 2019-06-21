@@ -15,19 +15,42 @@ get_wbd_grouped <- function(wbd) {
     summarise(do_union = FALSE)
 }
 
-geom_plot_data <- function(hu_grouped, hu12, net, lookup, filter) {
+write_output_gpkg <- function(net, wbd, hu_joiner, points, prj, viz_simp, out_dir) {
+  
+  wbd_viz_gpkg <- file.path(out_dir, "wbd_viz.gpkg")
+  
+  write_sf(wbd, wbd_viz_gpkg, "wbd_viz")
+  
+  write_sf(st_simplify(st_transform(net, prj), 
+                       dTolerance = viz_simp), 
+           wbd_viz_gpkg, "net")
+  
+  wbd_matched <- get_wbd_matched(hu_joiner, wbd)
+  
+  write_sf(wbd_matched, wbd_viz_gpkg, "wbd_matched")
+  
+  # write_sf(get_wbd_grouped(wbd_matched), wbd_viz_gpkg, "wbd_grouped")
+  
+  write_sf(points, wbd_viz_gpkg, "linked_points")
+}
+
+geom_plot_data <- function(hu12, net, lookup, filter) {
   
   lookup <- filter(lookup, grepl(filter, lookup$HUC12)) %>%
-    select(-intersected_LevelPathI, -trib_intersect, -trib_no_intersect, -headwater_error) %>%
+    select(-intersected_LevelPathI, -trib_intersect, -trib_no_intersect, -headwater_error, -TOHUC) %>%
     group_by(HUC12) %>%
     filter(corrected_LevelPathI == min(corrected_LevelPathI)) %>% # coastals with multiple get matched multiple times.
     ungroup()
   
+  hu12 <- filter(hu12, grepl(filter, hu12$HUC12)) %>%
+    left_join(lookup, by = "HUC12")
+    
+  hu_grouped <- get_wbd_grouped(hu12)
   hu_grouped <- filter(hu_grouped, corrected_LevelPathI %in% lookup$corrected_LevelPathI)
   hu12 <- filter(hu12, HUC12 %in% lookup$HUC12) %>%
     group_by(HUC12)
   
-  hu12 <- summarise(hu12, TOHUC = TOHUC[1])
+  hu12 <- dplyr::summarise(hu12, TOHUC = TOHUC[1])
   
   fromHUC <- sapply(hu12$HUC12, fromHUC_finder, 
                     hucs = hu12$HUC12, tohucs = hu12$TOHUC)

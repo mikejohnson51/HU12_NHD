@@ -1,38 +1,52 @@
-get_fline <- function(gdb) {
-  fline <- "NHDFlowline"
-  vaa <- "NHDPlusFlowlineVAA"
-  left_join(
-    read_sf(gdb, fline), 
-    suppressWarnings(read_sf(gdb, vaa)), 
-    by = "NHDPlusID")
-}
-
-get_nhdplushr <- function(hr_dir, hu02_list) {
-  gdb_files <- c()
+nhdhr_mod <- function(hr_gpkg, out_gpkg, force_terminal = FALSE) {
   
-  for(hu02 in hu02_list) {
-    gdb_files <- c(gdb_files, 
-                   list.files(hr_dir, pattern = "GDB.gdb", 
-                              full.names = TRUE))
+  if(!file.exists(out_gpkg)){
+    
+    layer <- read_sf(hr_gpkg, "NHDFlowline")
+    
+    terminals <- filter(layer, TerminalFl == 1)
+    
+    terminal_test <- layer$TerminalPa %in% terminals$TerminalPa
+    
+    warning(paste("Removing", sum(!terminal_test), 
+                  "flowlines that are missing terminal paths."))
+    
+    layer <- filter(layer, terminal_test)
+    
+    layer <- nhdplusTools:::rename_nhdplus(layer)
+    
+    layer <- filter(layer, FTYPE != 566 & TerminalFl != 1)
+    
+    if(force_terminal) {
+      t_atts <- select(st_set_geometry(layer, NULL), COMID, ToNode, FromNode, TerminalFl)
+      
+      t_atts <- left_join(t_atts, select(t_atts,
+                                         toCOMID = COMID,
+                                         FromNode),
+                          by = c("ToNode" = "FromNode"))
+      
+      na_t_atts <- filter(t_atts, is.na(t_atts$toCOMID) & TerminalFl == 0) 
+      
+      warning(paste("Found", nrow(na_t_atts), "broken outlets where no toNode and not terminal. Fixing."))
+      
+      layer$TerminalFl[which(layer$COMID %in% na_t_atts$COMID)] <- 1
+      
+      # out <- filter(layer, COMID %in% na_t_atts$COMID)
+      # 
+      # write_sf(out, "./bad.gpkg")
+    }
+    
+    write_sf(layer, layer = "NHDFlowline", dsn = out_gpkg)
   }
-  
-  layer <- lapply(gdb_files, get_fline)
-  
-  out_gpkg <- paste0(hr_dir, "/", paste(hu02, collapse = "_"), ".gpkg")
-  
-  do.call(rbind, layer) %>%
-    st_sf() %>%
-    write_sf(layer = "NHDFlowline", dsn = out_gpkg)
-
   return(out_gpkg)
 }
 
 
-get_net <- function(natdb, prj) {
-  if("NHDFlowline_Network" %in% st_layers(natdb)$name) {
-    out <- read_sf(natdb, "NHDFlowline_Network")
+get_net <- function(db, prj) {
+  if("NHDFlowline_Network" %in% st_layers(db)$name) {
+    out <- read_sf(db, "NHDFlowline_Network")
   } else {
-    out <- read_sf(natdb, "NHDFlowline")
+    out <- read_sf(db, "NHDFlowline")
   }
   
   if("NHDPlusID" %in% names(out)) {
@@ -41,9 +55,9 @@ get_net <- function(natdb, prj) {
                   AreaSqKM = AreaSqKm, DnHydroseq = DnHydroSeq)
     out$TerminalFl[which(!out$ToNode %in% out$FromNode)] <- 1
   }
-    return(out %>%
-             st_zm() %>%
-             st_transform(prj)
+  return(out %>%
+           st_zm() %>%
+           st_transform(prj)
   )
 }
 
@@ -115,11 +129,13 @@ prep_net <- function(net, simp) {
                                          area = AreaSqKM))
   
   net_prep <- st_simplify(net_prep, dTolerance = simp)
-    
+  
   return(net_prep)
 }
 
-get_process_data <- function(net_prep, wbd, simp) {
+get_process_data <- function(net, wbd, simp) {
+  
+  net_prep <- prep_net(net, simp)
   
   wbd <- select(st_simplify(wbd, dTolerance = simp), HUC12, TOHUC)
   
@@ -127,4 +143,18 @@ get_process_data <- function(net_prep, wbd, simp) {
     st_set_geometry(NULL)
   
   return(net_prep)
+}
+
+# Not used?
+load_nhd <- function(natdb, net_cache) {
+  message("loading NHD")
+  
+  if(file.exists(net_cache)) {
+    net <- readRDS(net_cache)
+  } else {
+    net <- read_sf(natdb, "NHDFlowline_Network") %>%
+      st_zm()
+    saveRDS(net, net_cache)
+  }
+  return(net)
 }

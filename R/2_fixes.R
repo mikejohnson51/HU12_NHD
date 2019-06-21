@@ -1,6 +1,6 @@
 get_fixes <- function(version) {
   if(version == "latest") {
-    fixes <- readr::read_csv("out/hu_fixes.csv") %>%
+    fixes <- readr::read_csv("fixes/hu_fixes.csv") %>%
       bind_rows(list(HUC12 = "180102040904", TOHUC = "180102041003", comment = "misdirected"))
   } else if(version == "nhdplusv2") {
   ##### Fixes #####
@@ -483,9 +483,6 @@ get_fixes <- function(version) {
                    comment =  "UNKNOWN fix"))
   } else {
     stop("only 'latest' or 'nhdplusv2' version supported.")
-  }
-  if(!is.null(fixes)) {
-    readr::write_csv(fixes, "out/tohuc_fixes.csv")
   }
   return(fixes)
 }

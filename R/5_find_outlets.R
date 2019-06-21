@@ -28,6 +28,83 @@ get_exclusions <- function(wbd_gdb) {
   return(exclude)
 }
 
+hu_points_fun <- function(hp) {
+  if(length(unlist(hp)) > 0) {
+    out <- do.call(rbind, 
+                   lapply(1:length(hp), 
+                          function(x) {
+                            if(length(unlist(hp[[x]])) > 0) {
+                              o <- lapply(1:length(hp[[x]]), 
+                                          function(y) st_cast(hp[[x]][y], "POINT"))
+                              o <- data.frame(geometry = do.call(c, o))
+                              o[["hu12"]] <- names(hp[x])
+                            } else {
+                              o <- data.frame(hu12 = names(hp[x]), stringsAsFactors = FALSE)
+                              o[["geometry"]] <- list(st_point())
+                            }
+                            return(o)
+                          }))
+  } else {
+    out <- data.frame(hu12 = names(hp), stringsAsFactors = FALSE)
+    out[["geometry"]] <- list(st_point())
+  }
+  
+  return(out)
+}
+
+run_lp <- function(lp_id, net, hu_lp, wbd) {
+  out <- NULL
+  tryCatch({
+    lp <- filter(net, LevelPathI == lp_id) %>%
+      st_geometry()
+    
+    hu_ids <- filter(hu_lp, corrected_LevelPathI == lp_id)
+    hus <- filter(wbd, HUC12 %in% hu_ids$HUC12)
+    st_geometry(hus) <- st_cast(st_geometry(hus), "MULTILINESTRING")
+    
+    out <- setNames(lapply(1:nrow(hus), 
+                           function(i, lp, hus) {
+                             suppressMessages(
+                               st_intersection(lp, st_geometry(hus)[i])
+                             )
+                           }, 
+                           lp = lp, hus = hus), 
+                    hus$HUC12)
+  }, 
+  error = function(e) {
+    warning(paste(lp_id, e))
+  }, 
+  warning = function(w) {
+    warning(paste(lp_id, w))
+  })
+  return(out)
+}
+
+par_linker <- function(lp_list) {
+  library(nhdplusTools)
+  library(dplyr)
+  library(sf)
+  linked <- NULL
+  tryCatch({
+    linked <- get_flowline_index(lp_list$lp_geom, lp_list$hu_points, search_radius = 1000) %>%
+      bind_cols(lp_list$hu_points) %>%
+      left_join(select(st_set_geometry(lp_list$lp_geom, NULL), COMID, Hydroseq), by = "COMID") %>%
+      group_by(hu12) %>%
+      filter(Hydroseq == min(Hydroseq))
+    
+    if(any(group_size(linked) > 1)) {
+      linked <- linked %>%
+        group_by(hu12, REACHCODE) %>%
+        filter(REACH_meas == min(REACH_meas))
+    }
+    
+    linked <- ungroup(linked)
+  },
+  error = function(e) warning(paste(lp_list$lp_search, e)),
+  warning = function(w) warning(paste(lp_list$lp_search, w)))
+  return(linked)
+}
+
 get_points_out <- function(hu_lp, net, wbd, exclude) {
   
   hu_lp <- group_by(hu_lp, HUC12) %>%
@@ -51,7 +128,7 @@ get_points_out <- function(hu_lp, net, wbd, exclude) {
   return(points)
 }
 
-write_lp_hu_points <- function(points, wbd, lp_hu_points_file) {
+get_lp_hu_points <- function(points, prj) {
   lp_points <- lapply(names(points), 
                       function(lp, points) {
                         hu_points <- bind_rows(lapply(points[lp], hu_points_fun))
@@ -63,14 +140,18 @@ write_lp_hu_points <- function(points, wbd, lp_hu_points_file) {
     bind_rows() %>%
     st_sf()
   
-  st_crs(lp_points) <- st_crs(wbd)
-  write_sf(lp_points, lp_hu_points_file)
+  st_crs(lp_points) <- prj
+
   return(lp_points)
 }
 
-get_linked_points <- function(exclude, lp_points, net, linked_points_gpkg, cores) {
+get_linked_points <- function(hu_lp, net, wbd, exclude, cores, check_file) {
 
-  net <- rename(net, REACHCODE = ReachCode.x)
+  if(file.exists(check_file)) {
+    linked <- read_sf(check_file, "linked_points")
+  } else {
+  lp_points <- get_points_out(hu_lp, net, wbd, exclude) %>%
+    get_lp_hu_points(st_crs(wbd))
   
   lp_points <- lp_points %>%
     filter(!hu12 %in% exclude) %>%
@@ -152,7 +233,6 @@ get_linked_points <- function(exclude, lp_points, net, linked_points_gpkg, cores
   
   linked <- rbind(linked, na_outlet_coords) %>%
     st_sf()
-
-  write_sf(linked, linked_points_gpkg)
+  }
   return(linked)
 }
