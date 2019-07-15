@@ -1,6 +1,10 @@
-nhdhr_mod <- function(hr_gpkg, out_gpkg, force_terminal = FALSE) {
+nhdhr_mod <- function(nhdhr_path, out_gpkg, force_terminal = FALSE) {
   
   if(!file.exists(out_gpkg)){
+    
+    hr_gpkg <- get_nhdplushr(nhdhr_path, 
+                             file.path(tempdir(), "temp.gpkg"), 
+                             layers = "NHDFlowline")
     
     layer <- read_sf(hr_gpkg, "NHDFlowline")
     
@@ -37,25 +41,22 @@ nhdhr_mod <- function(hr_gpkg, out_gpkg, force_terminal = FALSE) {
     }
     
     write_sf(layer, layer = "NHDFlowline", dsn = out_gpkg)
+  } else {
+    layer <- read_sf(layer, layer = "NHDPlowline")
   }
-  return(out_gpkg)
+  return(layer)
 }
 
 
-get_net <- function(db, prj) {
-  if("NHDFlowline_Network" %in% st_layers(db)$name) {
-    out <- read_sf(db, "NHDFlowline_Network")
-  } else {
-    out <- read_sf(db, "NHDFlowline")
-  }
+get_net <- function(net, prj) {
   
-  if("NHDPlusID" %in% names(out)) {
-    out <- rename(out, COMID = NHDPlusID, LENGTHKM = LengthKM, FTYPE = FType, 
+  if("NHDPlusID" %in% names(net)) {
+    net <- rename(net, COMID = NHDPlusID, LENGTHKM = LengthKM, FTYPE = FType, 
                   TotDASqKM = TotDASqKm, Hydroseq = HydroSeq, Pathlength = PathLength,
                   AreaSqKM = AreaSqKm, DnHydroseq = DnHydroSeq)
-    out$TerminalFl[which(!out$ToNode %in% out$FromNode)] <- 1
+    net$TerminalFl[which(!net$ToNode %in% net$FromNode)] <- 1
   }
-  return(out %>%
+  return(net %>%
            st_zm() %>%
            st_transform(prj)
   )
@@ -157,4 +158,11 @@ load_nhd <- function(natdb, net_cache) {
     saveRDS(net, net_cache)
   }
   return(net)
+}
+
+filter_vaa <- function(nhdhr_vaa, id) {
+  nhdhr_vaa$Pathlength <- 0
+  nhdhr_vaa$LENGTHKM <- 0
+  ut <- get_UT(nhdhr_vaa, id)
+  filter(nhdhr_vaa, NHDPlusID %in% ut)
 }
