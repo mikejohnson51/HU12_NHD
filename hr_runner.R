@@ -23,14 +23,24 @@ plan <- drake_plan(
   nhdhr_dir = "data/nhdplushr",
   nhdhr_path = download_nhdhr(nhdhr_dir, nhdhr_hu02),
   nhdhr = get_nhdplushr(nhdhr_path, NULL, layers = "NHDPlusFlowlineVAA")[[1]],
-  nhdhr_vaa = select(nhdhr, NHDPlusID, LevelPathI, DnLevelPat, DnHydroSeq, HydroSeq, TerminalPa),
+  nhdhr_vaa = select(nhdhr, NHDPlusID, LevelPathI, DnLevelPat, DnHydroSeq, HydroSeq, VPUID),
   nhdplus_hw_outlets = nhdplusTools:::mr_hw_cat_out(nhdplus_net),
   hr_pairs = get_hr_pairs(nhdhr_path, nhdplus_hw_outlets, prj, cores),
-  vaa_mod = filter_vaa(nhdhr_vaa, 10000100078175),
-  matched_lp = match_flowpaths(source_flowline = nhdplus_net,
-                               target_catchment = NULL, # Done in nhdplus_hw_outlets
-                               target_flowline = nhdhr_vaa, # only VAA metadata
-                               hr_pair = hr_pairs, cores = cores)
+  vaa_01 = filter_vaa(nhdhr_vaa, c("01", "02", "03", "04")),
+  vaa_02 = filter_vaa(nhdhr_vaa, c("05", "06", "07", "08", "09", "10", "11")),
+  vaa_03 = filter_vaa(nhdhr_vaa, c("12", "13", "14", "15", "16", "17", "18")),
+  matched_lp_01 = match_flowpaths(source_flowline = nhdplus_net,
+                                  target_catchment = NULL, # Done in nhdplus_hw_outlets
+                                  target_flowline = vaa_01, # only VAA metadata
+                                  hr_pair = hr_pairs, cores = cores),
+  matched_lp_02 = match_flowpaths(source_flowline = nhdplus_net,
+                                  target_catchment = NULL, # Done in nhdplus_hw_outlets
+                                  target_flowline = vaa_02, # only VAA metadata
+                                  hr_pair = hr_pairs, cores = cores),
+  matched_lp_03 = match_flowpaths(source_flowline = nhdplus_net,
+                                  target_catchment = NULL, # Done in nhdplus_hw_outlets
+                                  target_flowline = vaa_03, # only VAA metadata
+                                  hr_pair = hr_pairs, cores = cores)
 )
 
 make(plan)

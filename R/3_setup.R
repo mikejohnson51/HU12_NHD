@@ -160,9 +160,7 @@ load_nhd <- function(natdb, net_cache) {
   return(net)
 }
 
-filter_vaa <- function(nhdhr_vaa, id) {
-  nhdhr_vaa$Pathlength <- 0
-  nhdhr_vaa$LENGTHKM <- 0
-  ut <- get_UT(nhdhr_vaa, id)
-  filter(nhdhr_vaa, NHDPlusID %in% ut)
+filter_vaa <- function(nhdhr_vaa, filter_spec) {
+  huid <- substr(nhdhr_vaa$VPUID, 1, 2)
+  filter(nhdhr_vaa, huid %in% filter_spec)
 }
