@@ -12,3 +12,5 @@ data
 png/
 *.log
 .drake
+report/*
+*.qgs

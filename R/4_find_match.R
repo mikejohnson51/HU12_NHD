@@ -96,15 +96,13 @@ par_hr_pairs <- function(x, prj, nhdplus_hw_outlets) {
   cats <- sf::st_transform(cats, prj)
   cats <- nhdplusTools:::rename_nhdplus(cats)
   
-  dplyr::filter(nhdplusTools:::get_hr_pair(nhdplus_hw_outlets, cats), 
+  dplyr::filter(hyRefactor:::get_hr_pair(nhdplus_hw_outlets, cats), 
                 !is.na(FEATUREID))
 }
 
 get_hr_pairs <- function(nhdhr_path, nhdplus_hw_outlets, prj, cores) {
-  gdb_files <- unlist(lapply(nhdhr_path, function(x) {
-    list.files(x, pattern = ".*GDB.gdb$",
+  gdb_files <- list.files(nhdhr_path, pattern = ".*.gdb$",
                full.names = TRUE, recursive = TRUE, include.dirs = TRUE)
-  }))
   
   cl <- parallel::makeCluster(rep("localhost", cores), type = "SOCK")
   hr_pairs <- parallel::parLapply(cl, gdb_files, par_hr_pairs, prj = prj,

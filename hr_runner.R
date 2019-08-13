@@ -1,65 +1,83 @@
 library(nhdplusTools)
+library(hyRefactor)
 library(sf)
 library(dplyr)
 library(HUCAgg)
 library(drake)
 library(snow)
 library(xml2)
+library(purrr)
 
 source("R/1_download_data.R")
 source("R/3_setup.R")
 source("R/4_find_match.R")
 source("R/8_hr_proc.R")
 
+nhdhr_dir <- "data/hr/"
+# nhdhr_hu02 <- c("01", "02", "03", "04", "05", "06", "07", "08", "09", 
+#                "10", "11", "12", "13", "14", "15", "16", "17", "18")
+nhdhr_hu02 <- c("10")
+prj = 5070
+nhdp_dir <- "data/nhdp"
+nhdp_gdb <- "NHDPlusNationalData/NHDPlusV21_National_Seamless.gdb"
+nhdp_url <- "https://s3.amazonaws.com/nhdplus/NHDPlusV21/Data/NationalData/NHDPlusV21_NationalData_CONUS_Seamless_Geodatabase_05.7z"
+nhdp_gdb_path <- download_nhd_gdb(nhdp_dir, nhdp_gdb, nhdp_url)
+# hr_path <- download_nhdplushr(nhdhr_dir, nhdhr_hu02)
+hr_path <- "data/hr"
+hr_vpus <- list.files(hr_path, pattern = ".*10[0-9][0-9].*.gdb$",
+                         full.names = TRUE, recursive = TRUE, 
+                         include.dirs = TRUE)
+
+hr_vpus = rename_hr_fl(hr_vpus)
+
 plan <- drake_plan(
-  cores = 2,
-  prj = 5070,
-  nhdplus_dir = "data/nhdplus",
-  nhdplus_gdb = "NHDPlusNationalData/NHDPlusV21_National_Seamless.gdb",
-  nhdplus_url = "https://s3.amazonaws.com/nhdplus/NHDPlusV21/Data/NationalData/NHDPlusV21_NationalData_CONUS_Seamless_Geodatabase_05.7z",
-  nhdplus_gdb_path = download_nhd_gdb(nhdplus_dir, nhdplus_gdb, nhdplus_url),
-  nhdplus_net = get_net(read_sf(nhdplus_gdb_path, "NHDFlowline_Network"), prj),
-  nhdhr_hu02 = c("01", "02", "03", "04", "05", "06", "07", "08", "09", 
-                 "10", "11", "12", "13", "14", "15", "16", "17", "18"),
-  nhdhr_dir = "data/nhdplushr",
-  nhdhr_path = download_nhdhr(nhdhr_dir, nhdhr_hu02),
-  nhdhr = get_nhdplushr(nhdhr_path, NULL, layers = "NHDPlusFlowlineVAA")[[1]],
-  nhdhr_net_01 = get_nhdplushr("data/nhdplushr/10", layers = "NHDFlowline")[[1]],
-  # nhdhr_net_01 = get_nhdplushr("data/nhdplushr/", layers = "NHDFlowline", 
-  #                              pattern = paste0(c("01", "02", "03", "04"), ".*GDB.gdb$", collapse = "|"))[[1]],
-  # nhdhr_net_02 = get_nhdplushr("data/nhdplushr/", layers = "NHDFlowline", 
-  #                              pattern = paste0(c("05", "06", "07", "08", "09", "10", "11"), ".*GDB.gdb$", collapse = "|"))[[1]],
-  # nhdhr_net_03 = get_nhdplushr("data/nhdplushr/", layers = "NHDFlowline", 
-  #                              pattern = paste0(c("12", "13", "14", "15", "16", "17", "18"), ".*GDB.gdb$", collapse = "|"))[[1]],
-  nhdhr_vaa = select(nhdhr, NHDPlusID, LevelPathI, DnLevelPat, DnHydroSeq, HydroSeq, VPUID),
-  nhdplus_hw_outlets = nhdplusTools:::mr_hw_cat_out(nhdplus_net),
-  hr_pairs = get_hr_pairs(nhdhr_path, nhdplus_hw_outlets, prj, cores),
-  vaa_01 = filter_vaa(nhdhr_vaa, c("01", "02", "03", "04")),
-  vaa_02 = filter_vaa(nhdhr_vaa, c("05", "06", "07", "08", "09", "10", "11")),
-  vaa_03 = filter_vaa(nhdhr_vaa, c("12", "13", "14", "15", "16", "17", "18")),
-  matched_lp_01 = match_flowpaths(source_flowline = nhdplus_net,
-                                  target_catchment = NULL, # Done in nhdplus_hw_outlets
-                                  target_flowline = vaa_01, # only VAA metadata
-                                  hr_pair = hr_pairs, cores = cores),
-  matched_lp_02 = match_flowpaths(source_flowline = nhdplus_net,
-                                  target_catchment = NULL, # Done in nhdplus_hw_outlets
-                                  target_flowline = vaa_02, # only VAA metadata
-                                  hr_pair = hr_pairs, cores = cores),
-  matched_lp_03 = match_flowpaths(source_flowline = nhdplus_net,
-                                  target_catchment = NULL, # Done in nhdplus_hw_outlets
-                                  target_flowline = vaa_03, # only VAA metadata
-                                  hr_pair = hr_pairs, cores = cores),
-  compare_01 = post_proc(matched_lp = matched_lp_02,
-                         v2_net = nhdplus_net,
-                         hr_net = nhdhr_net_01),
-  plot_01 = plot_bad(comp = compare_01, hr_net = nhdhr_net_01, 
-                     v2_net = nhdplus_net, out_folder = "png2")
-  # compare_02 = post_proc(matched_lp = matched_lp_02,
-  #                        v2_net = nhdplus_net,
-  #                        hr_net = nhdhr_net_02),
-  # compare_03 = post_proc(matched_lp = matched_lp_03,
-  #                        v2_net = nhdplus_net,
-  #                        hr_net = nhdhr_net_03)
+  nhdp_net = target(get_net(read_sf(nhdp_gdb_path, "NHDFlowline_Network"), prj), hpc = FALSE),
+  
+  hr_vpu = target(nhdplusTools:::get_hr_data(vpu_f, "NHDFlowline"), 
+                     transform = cross(vpu_f = !!hr_vpus), hpc = TRUE),
+  
+  vpu_prep = target(prep_nhdplushr(hr_vpu), 
+                    transform = cross(hr_vpu), hpc = TRUE),
+  
+  nhdp_hw_outlets = target(hyRefactor:::mr_hw_cat_out(nhdp_net), hpc = FALSE),
+  
+  hr_pairs = target(get_hr_pairs(hr_path, nhdp_hw_outlets, 5070, 3), hpc = FALSE),
+
+  matched_lp = target(match_flowpaths(source_flowline = nhdp_net,
+                                      target_catchment = NULL,
+                                      target_flowline = hr_vpu,
+                                      hr_pair = hr_pairs),
+                       transform = cross(hr_vpu), hpc = TRUE),
+
+  compare = target(post_proc(v2_net = nhdp_net,
+                             hr_net = hr_vpu,
+                             matched_lp = matched_lp),
+                   transform = map(hr_vpu, matched_lp), hpc = FALSE),
+
+  combine = target(write_output(bind_rows(compare_2), "report/compare.csv"),
+                   transform = combine(compare_2), hpc = FALSE),
+  combine_matched_lp = target(write_output(bind_rows(matched_lp), "report/matched.csv"),
+                              transform = combine(matched_lp), hpc = FALSE),
+
+  compare_2 = target(compare_table(comp = compare,
+                                 hr_net = hr_vpu,
+                                 v2_net = nhdp_net),
+                   transform = map(compare, hr_vpu), hpc = FALSE),
+  compare_3 = target(post_analysis(comp = bind_rows(compare_2), lower_thresh_km = 1, upper_thresh_km = 100),
+                     transform = combine(compare_2), hpc = FALSE),
+  plot_bad = target(plot_fun(hr_net = hr_vpu, v2_net = nhdp_net, 
+                             lp = matched_lp, comp = compare_2, out_folder = "report"), 
+                    transform = map(matched_lp, compare_2, hr_vpu), hpc = FALSE)
 )
 
-make(plan)
+
+config <- drake_config(plan = plan,
+                       memory_strategy = "autoclean", 
+                       garbage_collection = TRUE)
+
+make(config = config)
+
+drake_build(config = config, "matched_lp_hr_vpu_data.hr.10.1002.gdb")
+
+# v2 LP: 590023769
+
