@@ -78,6 +78,7 @@ post_proc <- function(v2_net, hr_net, matched_lp) {
 
 write_output <- function(compare, file) {
   readr::write_csv(compare, file)
+  return(compare)
 }
 
 # for the HR flowpaths that are shorter than the MR flowpaths, 

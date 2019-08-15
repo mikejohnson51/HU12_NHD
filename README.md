@@ -2,6 +2,13 @@
 
 This repository holds work in progress code meant to match NHDPlus and Watershed Boundary Dataset networks to eachother. It is being shared for access with colleagues only. It is preliminary and subject to revision.
 
+![](img/1002.gif)  
+![](img/fig1.png)
+![](img/fig2.png)
+![](img/fig3.png)
+![](img/fig4.png)
+![](img/fig5.png)
+
 # Disclaimer
 
 This information is preliminary or provisional and is subject to revision. It is being provided to meet the need for timely best science. The information has not received final approval by the U.S. Geological Survey (USGS) and is provided on the condition that neither the USGS nor the U.S. Government shall be held liable for any damages resulting from the authorized or unauthorized use of the information.  
