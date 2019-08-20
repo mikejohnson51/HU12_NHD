@@ -7,7 +7,8 @@ This repository holds work in progress code meant to match NHDPlus and Watershed
 ![](img/fig2.png)
 ![](img/fig3.png)
 ![](img/fig4.png)
-![](img/fig5.png)
+![](img/fig5.png)  
+![](img/example.gif)
 
 # Disclaimer
 
