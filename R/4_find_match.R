@@ -1,5 +1,6 @@
 par_fun <- function(start_comid, net_atts, net_prep, wbd_atts, temp_dir) {
   library(nhdplusTools)
+  library(hyRefactor)
   library(sf)
   library(dplyr)
   
