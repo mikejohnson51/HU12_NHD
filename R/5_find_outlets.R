@@ -55,11 +55,11 @@ hu_points_fun <- function(hp) {
 run_lp <- function(lp_id, net, hu_lp, wbd) {
   out <- NULL
   tryCatch({
-    lp <- filter(net, LevelPathI == lp_id) %>%
+    lp <- net[net$LevelPathI == lp_id, ] %>%
       st_geometry()
     
-    hu_ids <- filter(hu_lp, corrected_LevelPathI == lp_id)
-    hus <- filter(wbd, HUC12 %in% hu_ids$HUC12)
+    hu_ids <- hu_lp[hu_lp$corrected_LevelPathI == lp_id, ]
+    hus <- wbd[wbd$HUC12 %in% hu_ids$HUC12, ]
     st_geometry(hus) <- st_cast(st_geometry(hus), "MULTILINESTRING")
     
     out <- setNames(lapply(1:nrow(hus), 
@@ -120,6 +120,8 @@ get_points_out <- function(hu_lp, net, wbd, exclude) {
     net <- st_transform(net, st_crs(wbd))
   }
   
+  net <- net[net$LevelPathI %in% lp_ids, ]
+  
   points <- setNames(lapply(X = lp_ids, 
                             FUN = run_lp, 
                             net = net, hu_lp = hu_lp, wbd = wbd),
@@ -141,98 +143,105 @@ get_lp_hu_points <- function(points, prj) {
     st_sf()
   
   st_crs(lp_points) <- prj
-
+  
   return(lp_points)
 }
 
 get_linked_points <- function(hu_lp, net, wbd, exclude, cores, check_file) {
-
+  
   if(file.exists(check_file)) {
     linked <- read_sf(check_file, "linked_points")
   } else {
-  lp_points <- get_points_out(hu_lp, net, wbd, exclude) %>%
-    get_lp_hu_points(st_crs(wbd))
-  
-  lp_points <- lp_points %>%
-    filter(!hu12 %in% exclude) %>%
-    mutate(lp = as.numeric(lp)) %>%
-    group_by(hu12) %>%
-    filter(lp == min(lp)) %>%
-    ungroup()
-
-  filter_na <- is.na(unname(st_coordinates(lp_points)[, 1]))
-  na_points <- filter(lp_points, filter_na)
-  lp_points <- filter(lp_points, !filter_na)
-
-  na_points <- st_set_geometry(na_points, NULL)
-
-  na_points <- distinct(na_points)
-
-  both <- filter(na_points, na_points$hu12 %in% lp_points$hu12) # Only broken border HUs included.
-
-  na_points <- filter(na_points, !hu12 %in% both)
-  lp_points <- filter(lp_points, !hu12 %in% both)
-  
-  na_outlets <- net %>%
-    filter(LevelPathI %in% na_points$lp) %>%
-    group_by(LevelPathI) %>%
-    filter(Hydroseq == min(Hydroseq)) %>%
-    ungroup() %>%
-    left_join(na_points, by = c("LevelPathI" = "lp"))
-
-  problem_na <- filter(na_outlets, FromMeas != 0)
-
-  na_outlets <- filter(na_outlets, FromMeas == 0)
-
-  na_outlet_coords <- st_coordinates(na_outlets) %>%
-    as.data.frame() %>%
-    group_by(L2) %>%
-    filter(row_number() == n()) %>%
-    ungroup() %>%
-    select(-L1, -L2) %>%
-    bind_cols(st_set_geometry(na_outlets, NULL)) %>%
-    st_as_sf(coords = c("X", "Y"), crs = st_crs(na_outlets)) %>%
-    rename(geom = geometry)
-
-  na_outlet_coords$REACH_meas <- 0
-  na_outlet_coords$offset <- 0
-
-  na_outlet_coords <- select(na_outlet_coords, 
-                             COMID, REACHCODE, REACH_meas, 
-                             offset, HUC12 = hu12, LevelPathI)
-
-  lp_list <- unique(lp_points$lp)
-
-  net <- select(net, COMID, LevelPathI, REACHCODE, ToMeas, FromMeas, Hydroseq) %>%
-    filter(LevelPathI %in% lp_list)
-
-  in_list_fun <- function(lp_search, net, lp_points) {
-    list(lp_search = lp_search,
-         lp_geom = filter(net, LevelPathI == lp_search),
-         hu_points = filter(lp_points, lp == lp_search))
-  }
-
-  in_list <- lapply(lp_list, in_list_fun, net = net, lp_points = lp_points)
-
-  gc()
-  
-  cl <- parallel::makeCluster(rep("localhost", cores), 
-                              type = "SOCK", outfile = "par.log")
-
-  linked <- parLapply(cl, in_list, par_linker)
-
-  parallel::stopCluster(cl)
-
-  linked <- st_sf(do.call(rbind, linked), crs = st_crs(na_outlet_coords)) %>%
-    select(COMID, REACHCODE, REACH_meas, offset, HUC12 = hu12, LevelPathI = lp)
-  
-  names(linked)[names(linked) == attr(linked, "sf_column")] <- 
-    names(na_outlet_coords)[names(na_outlet_coords) == attr(na_outlet_coords, "sf_column")]
-  
-  attr(linked, "sf_column") <- attr(na_outlet_coords, "sf_column")
-  
-  linked <- rbind(linked, na_outlet_coords) %>%
-    st_sf()
+    lp_points <- get_points_out(hu_lp, net, wbd, exclude) %>%
+      get_lp_hu_points(st_crs(wbd))
+    
+    rm(wbd, hu_lp)
+    gc()
+    
+    lp_points <- lp_points %>%
+      filter(!hu12 %in% exclude) %>%
+      mutate(lp = as.numeric(lp)) %>%
+      group_by(hu12) %>%
+      filter(lp == min(lp)) %>%
+      ungroup()
+    
+    filter_na <- is.na(unname(st_coordinates(lp_points)[, 1]))
+    na_points <- filter(lp_points, filter_na)
+    lp_points <- filter(lp_points, !filter_na)
+    
+    na_points <- st_set_geometry(na_points, NULL)
+    
+    na_points <- distinct(na_points)
+    
+    both <- filter(na_points, na_points$hu12 %in% lp_points$hu12) # Only broken border HUs included.
+    
+    na_points <- filter(na_points, !hu12 %in% both)
+    lp_points <- filter(lp_points, !hu12 %in% both)
+    
+    na_outlets <- net %>%
+      filter(LevelPathI %in% na_points$lp) %>%
+      group_by(LevelPathI) %>%
+      filter(Hydroseq == min(Hydroseq)) %>%
+      ungroup() %>%
+      left_join(na_points, by = c("LevelPathI" = "lp"))
+    
+    problem_na <- filter(na_outlets, FromMeas != 0)
+    
+    na_outlets <- filter(na_outlets, FromMeas == 0)
+    
+    na_outlet_coords <- st_coordinates(na_outlets) %>%
+      as.data.frame() %>%
+      group_by(L2) %>%
+      filter(row_number() == n()) %>%
+      ungroup() %>%
+      select(-L1, -L2) %>%
+      bind_cols(st_set_geometry(na_outlets, NULL)) %>%
+      st_as_sf(coords = c("X", "Y"), crs = st_crs(na_outlets)) %>%
+      rename(geom = geometry)
+    
+    rm(na_outlets)
+    
+    na_outlet_coords$REACH_meas <- 0
+    na_outlet_coords$offset <- 0
+    
+    na_outlet_coords <- select(na_outlet_coords, 
+                               COMID, REACHCODE, REACH_meas, 
+                               offset, HUC12 = hu12, LevelPathI)
+    
+    lp_list <- unique(lp_points$lp)
+    
+    net <- select(net, COMID, LevelPathI, REACHCODE, ToMeas, FromMeas, Hydroseq) %>%
+      filter(LevelPathI %in% lp_list)
+    
+    gc()
+    
+    in_list_fun <- function(lp_search, net, lp_points) {
+      list(lp_search = lp_search,
+           lp_geom = filter(net, LevelPathI == lp_search),
+           hu_points = filter(lp_points, lp == lp_search))
+    }
+    
+    in_list <- lapply(lp_list, in_list_fun, net = net, lp_points = lp_points)
+    
+    gc()
+    
+    cl <- parallel::makeCluster(rep("localhost", cores), 
+                                type = "SOCK", outfile = "par.log")
+    
+    linked <- parLapply(cl, in_list, par_linker)
+    
+    parallel::stopCluster(cl)
+    
+    linked <- st_sf(do.call(rbind, linked), crs = st_crs(na_outlet_coords)) %>%
+      select(COMID, REACHCODE, REACH_meas, offset, HUC12 = hu12, LevelPathI = lp)
+    
+    names(linked)[names(linked) == attr(linked, "sf_column")] <- 
+      names(na_outlet_coords)[names(na_outlet_coords) == attr(na_outlet_coords, "sf_column")]
+    
+    attr(linked, "sf_column") <- attr(na_outlet_coords, "sf_column")
+    
+    linked <- rbind(linked, na_outlet_coords) %>%
+      st_sf()
   }
   return(linked)
 }

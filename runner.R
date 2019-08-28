@@ -36,12 +36,13 @@ plan <- drake_plan(
   ##### Match NHDPlusV2 with stable (old) WBD
   nhdplus_oldwbd_out = "nhdplus_oldwbd_out/",
   nhdplus_oldwbd_hu_joiner = get_hu_joiner(nhdplus_net, nhdplus_wbd, proc_simp, cores, temp_dir, nhdplus_oldwbd_out),
-  nhdplus_oldwbd_linked_points = get_linked_points(nhdplus_oldwbd_hu_joiner, nhdplus_net,
-                                                   nhdplus_wbd, nhdplus_wbd_exclusions, cores,
-                                                   file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
+  # nhdplus_oldwbd_linked_points = get_linked_points(nhdplus_oldwbd_hu_joiner, nhdplus_net,
+  #                                                  nhdplus_wbd, nhdplus_wbd_exclusions, cores,
+  #                                                  file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
   nhdplus_oldwbd_write = write_output_gpkg(nhdplus_net, nhdplus_wbd, nhdplus_oldwbd_hu_joiner,
                     nhdplus_oldwbd_linked_points, prj, viz_simp, nhdplus_oldwbd_out),
-  ##### Constants for newest WBD.
+  wbd_plumbing = get_hu_outlets(nhdplus_wbd, nhdplus_oldwbd_linked_points, file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
+  #### Constants for newest WBD.
   wbd_dir = "data/wbd",
   wbd_zip_file = "WBD_National_GDB.zip",
   wbd_gdb_file = "WBD_National_GDB.gdb",
@@ -58,9 +59,11 @@ plan <- drake_plan(
                                                    file.path(nhdplus_newwbd_out, "wbd_viz.gpkg")),
   nhdplus_newwbd_write = write_output_gpkg(nhdplus_net, wbd, nhdplus_newwbd_hu_joiner,
                                            nhdplus_newwbd_linked_points, prj, viz_simp, nhdplus_newwbd_out),
+  nhdplus_newwbd_plumbing = get_hu_outlets(wbd, nhdplus_newwbd_linked_points, file.path(nhdplus_newwbd_out, "wbd_viz.gpkg")),
   # Create plots for newest WBD matches.
   plot_data = geom_plot_data(wbd, nhdplus_net, nhdplus_newwbd_hu_joiner, "^03.*"),
-  out_png = create_png(plot_data, nhdplus_newwbd_hu_joiner, "png/")
+  out_png = create_png(plot_data, nhdplus_newwbd_hu_joiner, "png/"),
+  out_wbd_png = wbd_plots(nhdplus_net, wbd_gdb_path, nhdplus_newwbd_plumbing)
   ##### NHDPlsuHR Stuff
   # nhdhr_hu02 = c("01", "02"),
   # nhdhr_dir = "data/hr",

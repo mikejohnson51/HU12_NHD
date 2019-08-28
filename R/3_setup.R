@@ -112,41 +112,6 @@ get_wbd <- function(wbd_gdb, fixes, prj) {
   return(wbd)
 }
 
-get_wbd08 <- function(wbd_gdb, prj = NULL, layer = "WBDHU8", hu12 = NULL) {
-  wbd <- read_sf(wbd_gdb, layer)
-  
-  wbd <- filter(wbd, !grepl("^20.*|^19.*|^21.*|^22.*", HUC8))
-  
-  hu12 <- st_set_geometry(hu12, NULL) %>%
-    distinct()
-  
-  hu12_sort <- names(igraph::topo_sort(igraph::graph_from_data_frame(
-    hu12, directed = TRUE), mode = "out"))
-  
-  
-  hu12_sort <- hu12_sort[hu12_sort %in% hu12$HUC12]
-  
-  
-  hu12 <- left_join(tibble(HUC12 = hu12_sort),
-                    hu12, by = "HUC12")
-  
-  hu12[["sort"]] <- seq_len(nrow(hu12))
-  
-  
-  hu08_outlet <- hu12 %>%
-    mutate(HUC8 = substr(.$HUC12, 1, 8)) %>%
-    group_by(HUC8) %>%
-    filter(sort == max(sort)) %>%
-    ungroup() %>%
-    mutate(toHUC8 = substr(.$TOHUC, 1, 8))
-  
-  wbd <- left_join(select(wbd, HUC8), hu08_outlet, by = "HUC8")
-  
-  wbd <- st_transform(wbd, prj)
-  
-  return(wbd)
-}
-
 prep_net <- function(net, simp) {
   
   net_prep <- prepare_nhdplus(net, 
@@ -196,30 +161,6 @@ load_nhd <- function(natdb, net_cache) {
     saveRDS(net, net_cache)
   }
   return(net)
-}
-
-pad_hu4 <- function(x) {
-  sapply(x, function(x) {
-    if(nchar(x) == 3) {
-      paste0("0", x)
-    } else {
-      x
-    }
-  }, USE.NAMES = FALSE)
-}
-
-get_wbd04 <- function(geo_path, tsv_path, prj) {
-  hu04_table <- read_tsv(tsv_path) %>%
-    select(HUC4 = FromHUC4, toHUC4 = ToHUC4) %>%
-    mutate(HUC4 = pad_hu4(as.character(HUC4)), 
-           toHUC4 = pad_hu4(as.character(toHUC4))) %>%
-    distinct()
-  
-  st_sf(select(left_join(read_sf(geo_path), 
-                         hu04_table,
-                         by = c("HUC4" = "HUC4")), 
-        HUC12 = HUC4, TOHUC = toHUC4)) %>%
-    st_transform(prj)
 }
 
 
