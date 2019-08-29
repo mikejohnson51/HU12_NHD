@@ -147,83 +147,86 @@ get_lp_hu_points <- function(points, prj) {
   return(lp_points)
 }
 
-get_linked_points <- function(hu_lp, net, wbd, exclude, cores, check_file) {
+get_lp_points <- function(hu_lp, net, wbd, exclude) {
+  lp_points <- get_points_out(hu_lp, net, wbd, exclude) %>%
+    get_lp_hu_points(st_crs(wbd)) %>%
+    filter(!hu12 %in% exclude) %>%
+    mutate(lp = as.numeric(lp)) %>%
+    group_by(hu12) %>%
+    filter(lp == min(lp)) %>%
+    ungroup()
+  
+  filter_na <- is.na(unname(st_coordinates(lp_points)[, 1]))
+  na_points <- filter(lp_points, filter_na)
+  lp_points <- filter(lp_points, !filter_na)
+  
+  na_points <- st_set_geometry(na_points, NULL)
+  
+  na_points <- distinct(na_points)
+  
+  both <- filter(na_points, na_points$hu12 %in% lp_points$hu12) # Only broken border HUs included.
+  
+  na_points <- filter(na_points, !hu12 %in% both)
+  lp_points <- filter(lp_points, !hu12 %in% both)
+  
+  return(list(lp = lp_points, na = na_points))
+}
+
+get_na_outlets_coords <- function(lp_points, net) {
+  na_points <- lp_points$na
+  
+  na_outlets <- net %>%
+    filter(LevelPathI %in% na_points$lp) %>%
+    group_by(LevelPathI) %>%
+    filter(Hydroseq == min(Hydroseq)) %>%
+    ungroup() %>%
+    left_join(na_points, by = c("LevelPathI" = "lp"))
+  
+  problem_na <- filter(na_outlets, FromMeas != 0)
+  
+  na_outlets <- filter(na_outlets, FromMeas == 0)
+  
+  na_outlet_coords <- st_coordinates(na_outlets) %>%
+    as.data.frame() %>%
+    group_by(L2) %>%
+    filter(row_number() == n()) %>%
+    ungroup() %>%
+    select(-L1, -L2) %>%
+    bind_cols(st_set_geometry(na_outlets, NULL)) %>%
+    st_as_sf(coords = c("X", "Y"), crs = st_crs(na_outlets)) %>%
+    rename(geom = geometry)
+  
+  na_outlet_coords$REACH_meas <- 0
+  na_outlet_coords$offset <- 0
+  
+  select(na_outlet_coords, 
+         COMID, REACHCODE, REACH_meas, 
+         offset, HUC12 = hu12, LevelPathI)
+}
+
+get_in_list <- function(lp_points, net) {
+  lp_points <- lp_points$lp
+  
+  lp_list <- unique(lp_points$lp)
+  
+  net <- select(net, COMID, LevelPathI, REACHCODE, 
+                ToMeas, FromMeas, Hydroseq) %>%
+    filter(LevelPathI %in% lp_list)
+  
+  in_list_fun <- function(lp_search, net, lp_points) {
+    list(lp_search = lp_search,
+         lp_geom = filter(net, LevelPathI == lp_search),
+         hu_points = filter(lp_points, lp == lp_search))
+  }
+  
+  lapply(lp_list, in_list_fun, net = net, lp_points = lp_points)
+}
+
+get_linked_points <- function(in_list, na_outlet_coords, cores, check_file) {
   
   if(file.exists(check_file)) {
     linked <- read_sf(check_file, "linked_points")
   } else {
-    lp_points <- get_points_out(hu_lp, net, wbd, exclude) %>%
-      get_lp_hu_points(st_crs(wbd))
-    
-    rm(wbd, hu_lp)
-    gc()
-    
-    lp_points <- lp_points %>%
-      filter(!hu12 %in% exclude) %>%
-      mutate(lp = as.numeric(lp)) %>%
-      group_by(hu12) %>%
-      filter(lp == min(lp)) %>%
-      ungroup()
-    
-    filter_na <- is.na(unname(st_coordinates(lp_points)[, 1]))
-    na_points <- filter(lp_points, filter_na)
-    lp_points <- filter(lp_points, !filter_na)
-    
-    na_points <- st_set_geometry(na_points, NULL)
-    
-    na_points <- distinct(na_points)
-    
-    both <- filter(na_points, na_points$hu12 %in% lp_points$hu12) # Only broken border HUs included.
-    
-    na_points <- filter(na_points, !hu12 %in% both)
-    lp_points <- filter(lp_points, !hu12 %in% both)
-    
-    na_outlets <- net %>%
-      filter(LevelPathI %in% na_points$lp) %>%
-      group_by(LevelPathI) %>%
-      filter(Hydroseq == min(Hydroseq)) %>%
-      ungroup() %>%
-      left_join(na_points, by = c("LevelPathI" = "lp"))
-    
-    problem_na <- filter(na_outlets, FromMeas != 0)
-    
-    na_outlets <- filter(na_outlets, FromMeas == 0)
-    
-    na_outlet_coords <- st_coordinates(na_outlets) %>%
-      as.data.frame() %>%
-      group_by(L2) %>%
-      filter(row_number() == n()) %>%
-      ungroup() %>%
-      select(-L1, -L2) %>%
-      bind_cols(st_set_geometry(na_outlets, NULL)) %>%
-      st_as_sf(coords = c("X", "Y"), crs = st_crs(na_outlets)) %>%
-      rename(geom = geometry)
-    
-    rm(na_outlets)
-    
-    na_outlet_coords$REACH_meas <- 0
-    na_outlet_coords$offset <- 0
-    
-    na_outlet_coords <- select(na_outlet_coords, 
-                               COMID, REACHCODE, REACH_meas, 
-                               offset, HUC12 = hu12, LevelPathI)
-    
-    lp_list <- unique(lp_points$lp)
-    
-    net <- select(net, COMID, LevelPathI, REACHCODE, ToMeas, FromMeas, Hydroseq) %>%
-      filter(LevelPathI %in% lp_list)
-    
-    gc()
-    
-    in_list_fun <- function(lp_search, net, lp_points) {
-      list(lp_search = lp_search,
-           lp_geom = filter(net, LevelPathI == lp_search),
-           hu_points = filter(lp_points, lp == lp_search))
-    }
-    
-    in_list <- lapply(lp_list, in_list_fun, net = net, lp_points = lp_points)
-    
-    gc()
     
     cl <- parallel::makeCluster(rep("localhost", cores), 
                                 type = "SOCK", outfile = "par.log")

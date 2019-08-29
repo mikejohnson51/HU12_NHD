@@ -7,6 +7,7 @@ library(drake)
 library(snow)
 library(xml2)
 library(readr)
+library(rmapshaper)
 
 source("R/1_download_data.R")
 source("R/2_fixes.R")
@@ -36,9 +37,11 @@ plan <- drake_plan(
   ##### Match NHDPlusV2 with stable (old) WBD
   nhdplus_oldwbd_out = "nhdplus_oldwbd_out/",
   nhdplus_oldwbd_hu_joiner = get_hu_joiner(nhdplus_net, nhdplus_wbd, proc_simp, cores, temp_dir, nhdplus_oldwbd_out),
-  # nhdplus_oldwbd_linked_points = get_linked_points(nhdplus_oldwbd_hu_joiner, nhdplus_net,
-  #                                                  nhdplus_wbd, nhdplus_wbd_exclusions, cores,
-  #                                                  file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
+  nhdplus_oldwbd_lp_points = get_lp_points(nhdplus_oldwbd_hu_joiner, nhdplus_net, wbd, wbd_exclusions),
+  nhdplus_oldwbd_na_outlet_coords = get_na_outlets_coords(nhdplus_oldwbd_lp_points, nhdplus_net),
+  nhdplus_oldwbd_in_list = get_in_list(nhdplus_oldwbd_lp_points, nhdplus_net),
+  nhdplus_oldwbd_linked_points = get_linked_points(nhdplus_oldwbd_in_list, nhdplus_oldwbd_na_outlet_coords, cores,
+                                                   file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
   nhdplus_oldwbd_write = write_output_gpkg(nhdplus_net, nhdplus_wbd, nhdplus_oldwbd_hu_joiner,
                     nhdplus_oldwbd_linked_points, prj, viz_simp, nhdplus_oldwbd_out),
   wbd_plumbing = get_hu_outlets(nhdplus_wbd, nhdplus_oldwbd_linked_points, file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
@@ -55,7 +58,10 @@ plan <- drake_plan(
   ##### Match newest WBD to NHDPlusV2.
   nhdplus_newwbd_out = "nhdplus_newwbd_out/",
   nhdplus_newwbd_hu_joiner = get_hu_joiner(nhdplus_net, wbd, proc_simp, cores, temp_dir, nhdplus_newwbd_out),
-  nhdplus_newwbd_linked_points = get_linked_points(nhdplus_newwbd_hu_joiner, nhdplus_net, wbd, wbd_exclusions, cores,
+  nhdplus_newwbd_lp_points = get_lp_points(nhdplus_newwbd_hu_joiner, nhdplus_net, wbd, wbd_exclusions),
+  nhdplus_newwbd_na_outlet_coords = get_na_outlets_coords(nhdplus_newwbd_lp_points, nhdplus_net),
+  nhdplus_newwbd_in_list = get_in_list(nhdplus_newwbd_lp_points, nhdplus_net),
+  nhdplus_newwbd_linked_points = get_linked_points(nhdplus_newwbd_in_list, nhdplus_newwbd_na_outlet_coords, cores,
                                                    file.path(nhdplus_newwbd_out, "wbd_viz.gpkg")),
   nhdplus_newwbd_write = write_output_gpkg(nhdplus_net, wbd, nhdplus_newwbd_hu_joiner,
                                            nhdplus_newwbd_linked_points, prj, viz_simp, nhdplus_newwbd_out),
@@ -63,7 +69,8 @@ plan <- drake_plan(
   # Create plots for newest WBD matches.
   plot_data = geom_plot_data(wbd, nhdplus_net, nhdplus_newwbd_hu_joiner, "^03.*"),
   out_png = create_png(plot_data, nhdplus_newwbd_hu_joiner, "png/"),
-  out_wbd_png = wbd_plots(nhdplus_net, wbd_gdb_path, nhdplus_newwbd_plumbing)
+  out_wbd_plot_data = get_wbd_plot_data(nhdplus_net, wbd_gdb_path, nhdplus_newwbd_plumbing, viz_simp, prj, cores, file.path(nhdplus_newwbd_out, "wbd_plots.gpkg")),
+  out_wbd_plots = plot_wbd(out_wbd_plot_data)
   ##### NHDPlsuHR Stuff
   # nhdhr_hu02 = c("01", "02"),
   # nhdhr_dir = "data/hr",

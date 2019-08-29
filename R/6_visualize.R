@@ -210,3 +210,86 @@ create_png <- function(plot_data, hu_joiner, out_folder) {
   viz_basinboundary <- filter(hu12_boundaries, HUC12 %in% unique(mainstem_hus$outlet_HUC12))
   plotter("example3")
 }
+
+get_wbd_plot_data <- function(nhdplus_net, wbd_gdb_path, plumbing, viz_simp, prj, cores, out_gpkg) {
+  if(file.exists(out_gpkg)) {
+    message(out_gpkg, " already exists, skipping.")
+    return(out_gpkg)
+  }
+  
+  prep <- prepare_nhdplus(nhdplus_net, 0, 0, 0, FALSE)$COMID
+  
+  nhdplus_net <- select(nhdplus_net, COMID, LENGTHKM, LevelPathI, Pathlength, DnLevelPat, Hydroseq, DnHydroseq, UpHydroseq)
+  
+  net_atts <- st_set_geometry(nhdplus_net, NULL)
+  
+  hu_levels <- c(2, 4, 6, 8, 10)
+  
+  for(hu_level in hu_levels) {
+    hu_att <- paste0("HUC", hu_level)
+    gdb_layer <- paste0("WBDHU", hu_level)
+    
+    wbd <- read_sf(wbd_gdb_path, gdb_layer)
+    wbd <- wbd[!grepl("^20.*|^19.*|^21.*|^22.*", wbd[[hu_att]]), ]
+    wbd <- st_transform(wbd, prj)
+    
+    outlets <- plumbing[plumbing[[hu_att]] %in% wbd[[hu_att]], ]  
+    
+    outlet_ids <- unique(outlets$COMID)
+    
+    cl <- parallel::makeCluster(rep("localhost", cores), 
+                                type = "SOCK", 
+                                outfile = "viz.log")
+    
+    all <- c(do.call(c, parLapply(cl, outlet_ids, dm_fun, network = net_atts)), 
+             do.call(c, parLapply(cl, outlet_ids, um_fun, network = net_atts)))
+    
+    stopCluster(cl)
+    
+    nt <- nhdplus_net[nhdplus_net[["COMID"]] %in% all &
+                                 nhdplus_net[["COMID"]] %in% prep, ] %>%
+      st_transform(prj)
+    
+    bb <- st_bbox(wbd)
+    
+    write_sf(wbd, out_gpkg, paste0("wbd_hu", hu_level))
+    write_sf(nt, out_gpkg, paste0("nhd_hu", hu_level))
+    write_sf(outlets, out_gpkg, paste0("out_hu", hu_level))
+    
+    # plot_fun(bb, st_geometry(wbd), nt, st_geometry(outlets), 
+    #          paste0("png/wbd_level", hu_level, ".png"))
+  }
+  return(out_gpkg)
+}
+
+
+plot_wbd <- function(gpkg) {
+  hu_levels <- c(2, 4, 6, 8, 10)
+  
+  for(hl in hu_levels) {
+    out <- read_sf(gpkg, paste0("out_hu", hl))
+    net <- read_sf(gpkg, paste0("nhd_hu", hl)) %>%
+      rmapshaper::ms_simplify(keep = 0.05, sys = TRUE)
+    wbd <- read_sf(gpkg, paste0("wbd_hu", hl)) %>%
+      rmapshaper::ms_simplify(keep = 0.05, sys = TRUE)
+    bb <- st_as_sfc(st_bbox(wbd), crs = st_crs(wbd))
+    plot_fun(bb, st_geometry(wbd), st_geometry(net), st_geometry(out), paste0("png/wbd_viz_hu", hl))
+  }
+}
+
+plot_fun <- function(bb, wb, nt, pt, fi) {
+  png(fi, width = 4096, height = 3072)
+  plot(bb, border = NA)
+  plot(wb, lwd = .7, add = TRUE)
+  plot(nt, col = "blue", add = TRUE)
+  plot(pt, col = "black", pch = 16, add = TRUE)
+  dev.off()
+}
+
+dm_fun <- function(id, network) {
+  nhdplusTools::get_DM(network = network, comid = id)
+}
+
+um_fun <- function(id, network) {
+  nhdplusTools::get_UM(network = network, comid = id)
+}
