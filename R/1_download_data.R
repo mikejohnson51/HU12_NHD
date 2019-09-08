@@ -36,3 +36,15 @@ download_wbd <- function(wbd_dir, wbd_zip_file, wbd_gdb_file, wbd_url) {
   }
   return(out)
 }
+
+download_rf1 <- function(rf1_url, rf1_dir) {
+  dir.create(rf1_dir, recursive = TRUE, showWarnings = FALSE)
+  out_file <- file.path(rf1_dir, "erf1_2.e00")
+  if(file.exists(out_file)) {
+    return(out_file)
+  } else {
+    download.file(rf1_url, destfile = paste0(out_file, ".gz"))
+    out_file <- gunzip(paste0(out_file, ".gz"))
+    return(as.character(out_file))
+  }
+}

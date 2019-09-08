@@ -141,7 +141,6 @@ get_hu_outlet <- function(hu12, hu_size, hu_name) {
   hu_outlet
 }
 
-
 par_hr_pairs <- function(x, prj, nhdplus_hw_outlets) {
   cats <- sf::read_sf(x, "NHDPlusCatchment")
   cats <- sf::st_transform(cats, prj)
@@ -159,4 +158,11 @@ get_hr_pairs <- function(nhdhr_path, nhdplus_hw_outlets, prj, cores) {
   hr_pairs <- parallel::parLapply(cl, gdb_files, par_hr_pairs, prj = prj,
                                   nhdplus_hw_outlets = nhdplus_hw_outlets)
   dplyr::bind_rows(hr_pairs)
+}
+
+get_hw_pairs <- function(hw_points, nhdp_cats) {
+  sf::st_join(hw_points,
+              dplyr::select(nhdp_cats, FEATUREID),
+              join = sf::st_within) %>%
+    st_set_geometry(NULL)
 }

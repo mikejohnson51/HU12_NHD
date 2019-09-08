@@ -8,6 +8,8 @@ library(snow)
 library(xml2)
 library(readr)
 library(rmapshaper)
+library(R.utils)
+library(tidyr)
 
 source("R/1_download_data.R")
 source("R/2_fixes.R")
@@ -27,6 +29,11 @@ plan <- drake_plan(
   nhdplus_dir = "data/nhdp/",
   nhdplus_gdb = "NHDPlusNationalData/NHDPlusV21_National_Seamless.gdb",
   nhdplus_url = "https://s3.amazonaws.com/nhdplus/NHDPlusV21/Data/NationalData/NHDPlusV21_NationalData_CONUS_Seamless_Geodatabase_05.7z",
+  rf1_url = "https://water.usgs.gov/GIS/dsdl/erf1_2.e00.gz",
+  rf1_dir = "data/RF1/",
+  rf1_file = download_rf1(rf1_url, rf1_dir),
+  rf1 = clean_rf1(read_sf(rf1_file)),
+  nhdplus_cats = st_transform(read_sf(nhdplus_gdb_path, "CatchmentSP"), prj),
   ##### Load static dependencies
   nhdplus_wbd_fixes = get_fixes("nhdplusv2"),
   nhdplus_gdb_path = download_nhd_gdb(nhdplus_dir, nhdplus_gdb, nhdplus_url),
@@ -43,7 +50,7 @@ plan <- drake_plan(
   nhdplus_oldwbd_linked_points = get_linked_points(nhdplus_oldwbd_in_list, nhdplus_oldwbd_na_outlet_coords, cores,
                                                    file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
   nhdplus_oldwbd_write = write_output_gpkg(nhdplus_net, nhdplus_wbd, nhdplus_oldwbd_hu_joiner,
-                    nhdplus_oldwbd_linked_points, prj, viz_simp, nhdplus_oldwbd_out),
+                                           nhdplus_oldwbd_linked_points, prj, viz_simp, nhdplus_oldwbd_out),
   wbd_plumbing = get_hu_outlets(nhdplus_wbd, nhdplus_oldwbd_linked_points, file.path(nhdplus_oldwbd_out, "wbd_viz.gpkg")),
   #### Constants for newest WBD.
   wbd_dir = "data/wbd",
@@ -70,7 +77,13 @@ plan <- drake_plan(
   plot_data = geom_plot_data(wbd, nhdplus_net, nhdplus_newwbd_hu_joiner, "^03.*"),
   out_png = create_png(plot_data, nhdplus_newwbd_hu_joiner, "png/"),
   out_wbd_plot_data = get_wbd_plot_data(nhdplus_net, wbd_gdb_path, nhdplus_newwbd_plumbing, viz_simp, prj, cores, file.path(nhdplus_newwbd_out, "wbd_plots.gpkg")),
-  out_wbd_plots = plot_wbd(out_wbd_plot_data)
+  out_wbd_plots = plot_wbd(out_wbd_plot_data),
+  # Match RF1 to NHDPlusV2
+  rf1_hw = get_hw_points(rf1),
+  rf1_nhdplus_hw_pairs = get_hw_pairs(rf1_hw, nhdplus_cats),
+  rf1_nhdplus = match_flowpaths(st_set_geometry(nhdplus_net, NULL), 
+                                st_set_geometry(rf1, NULL),
+                                rf1_nhdplus_hw_pairs)
   ##### NHDPlsuHR Stuff
   # nhdhr_hu02 = c("01", "02"),
   # nhdhr_dir = "data/hr",
@@ -88,5 +101,5 @@ plan <- drake_plan(
 config <- drake_config(plan = plan,
                        memory_strategy = "autoclean", 
                        garbage_collection = TRUE)
-                       
+
 make(config = config)

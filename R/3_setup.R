@@ -163,5 +163,18 @@ load_nhd <- function(natdb, net_cache) {
   return(net)
 }
 
-
+clean_rf1 <- function(rf1) {
+  from_to <- st_set_geometry(rf1, NULL) %>%
+    filter(!TYPE %in% c("C", "G", "I", "L", "W", "X", "Z", "N")) %>%
+    select(ID = ERF1_2., fnode_temp = FNODE_, tnode= TNODE_, name = PNAME, div_fraction = FRAC) %>%
+    group_by(fnode_temp) %>%
+    mutate(fnode = ifelse(div_fraction == max(div_fraction), fnode_temp, NA)) %>%
+    ungroup() %>%
+    select(-fnode_temp, -div_fraction)
+  
+  left_join(from_to, select(from_to, toID = ID, fnode), by = c("tnode" = "fnode")) %>%
+    select(-fnode, -tnode) %>%
+    left_join(select(rf1, ID = ERF1_2.), by = "ID") %>%
+    st_sf() 
+}
 
